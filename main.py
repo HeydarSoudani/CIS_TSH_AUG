@@ -1,20 +1,29 @@
-{
-    "id": "s_2888_0",
-    "user_profile":
-        {"Age Range": "Over 50", "Residence": "Changsha", "Accepted movies": "From ashes to ashes; Yang ± Yin: Gender in Chinese Cinema", "Accepted music": "Crystal Quality; The One and Only", "Rejected music": "The Wind Blows On", "Gender": "Female", "Accepted celebrities": "Leslie Cheung; Leehom Wang", "Name": "Pingfeng Li", "Rejected movies": "The Kid", "Occupation": "Retired"},
-    "user_personality":
-        {"agreeableness": "trustworthy, straightforward, and generous", "conscientiousness": "efficient, organized, and careful", "extraversion": "shy, reserved, and quiet", "neuroticism": "sensitive, nervous, and insecure", "openness": "intellectual, imaginative, and curious"},
-    "knowledge":
-        [
-            ["Double Tap", "Stars", "Leslie Cheung Fang Zhongxin Huang Zhuoling"],
-            ["Leslie Cheung", "Achievement", "an 8-time nominee for Best Actor at the Hong Kong Film Awards"],
-            ["Days of Being Wild", "Type", "plot"], ["Leslie Cheung", "Stars", "The Kid"], ["Leslie Cheung", "Stars", "He Is a Woman, She Is a Man"], ["Moonlight Express", "Stars", "Leslie Cheung Chang pan Guizi"], ["Leslie Cheung", "Sings", "You Hate Me So Much"], ["Leslie Cheung", "Achievement", "The first Chinese singer becoming popular in South Korea music industry"], ["Leslie Cheung", "Sings", "The Years Flow Like Water"], ["Leslie Cheung", "Sings", "Monica"], ["Moonlight Express", "Reputation", "good reputation"], ["Once a Thief", "Rating", "8.2"], ["Leslie Cheung", "Stars", "Moonlight Express"], ["Moonlight Express", "Type", "Romance Thriller plot"], ["Leslie Cheung", "Sings", "Begone Love"], ["Leslie Cheung", "Sings", "Blamefully Beautiful"], ["Moonlight Express", "Director", "Daniel Lee"], ["Moonlight Express", "Rating", "7.8"], ["From ashes to ashes", "Rating", "8.2"], ["Leslie Cheung", "Sings", "Piano in the Attic"], ["Left Right Love Destiny", "Type", "music"], ["Leslie Cheung", "Sings", "A Chinese Ghost Story"], ["Leslie Cheung", "Sings", "The Butterfly Murders"], ["Leslie Cheung", "Sings", "The Star"], ["Leslie Cheung", "Achievement", "Malaysia Golden Melody Award"], ["Farewell My Concubine", "Reputation", "good reputation; love movies with good reputation; domestic movies with good reputation; top 10 movies in history; top 20 movies in history; top 50 movies in history; top 100 movies in history; top 10 love movies in the past 30 years; domestic movie with the highest score in the past 30 years; top ten domestic movies in the past 30 years"], ["Leslie Cheung", "Sings", "In My Lifetime"], ["Leslie Cheung", "Sings", "Sentimental Past"], ["Leslie Cheung", "Sings", "Crystal Quality"], ["Leslie Cheung", "Sings", "Someone With You"], ["Moonlight Express", "Comments", "Leslie Cheung's got that appealing and charming expression when he smokes"], ["From ashes to ashes", "Comments", "It's good. It's a recognized masterpiece"], ["Yang ± Yin: Gender in Chinese Cinema", "Type", "documentary"], ["The Wind Blows On", "Comments", "There is no room for soul in other places"], ["Leslie Cheung", "Intro", "outstanding artist"], ["Leehom Wang", "Intro", "national idol"], ["The Kid", "Type", "plot Comedy"]],
-    "target": ["Movie recommendation", "Moonlight Express"],
-    "conversation":
-        [
-            {"system": "Hello Pingfeng Li, it's great to chat with you today. I'm also a big fan of movies. What are some of your favorite films and actors?"},
-            {"user": "I enjoy films that explore gender and identity, such as From Ashes to Ashes and Yang ± Yin. My favorite actors are Leslie Cheung and Leehom Wang."},
-            {"system": "It's great to hear that you're a fan of Leslie Cheung. Did you know that he starred in a romantic thriller called Moonlight Express? It's one of my favorite films and it has a good reputation among movie enthusiasts. Have you seen it before?"},
-            {"user": "Yes, I have seen Moonlight Express before, and I enjoyed it. Leslie Cheung's performance was exceptional, as always. I also appreciate his music, particularly his album Crystal Quality."}
-        ]
- }
+import csv
+
+# Specify the input and output file paths
+input_file = 'corpus/TopiOCQA/full_wiki_segments.tsv'
+output_file = 'corpus/TopiOCQA/full_wiki_segments_n1000.tsv'
+
+# Number of rows to extract (excluding header)
+num_rows_to_extract = 1000  # Adjust this number as needed
+
+# Open the input file in read mode and output file in write mode
+with open(input_file, 'r', newline='', encoding='utf-8') as infile, \
+     open(output_file, 'w', newline='', encoding='utf-8') as outfile:
+    
+    # Create a CSV reader and writer
+    tsv_reader = csv.reader(infile, delimiter='\t')
+    tsv_writer = csv.writer(outfile, delimiter='\t')
+    
+    # Read the header from the input file and write it to the output file
+    header = next(tsv_reader)
+    tsv_writer.writerow(header)
+    
+    # Write a specified number of rows to the output file
+    for i, row in enumerate(tsv_reader):
+        if i < num_rows_to_extract:
+            tsv_writer.writerow(row)
+        else:
+            break
+
+print(f'Extracted {num_rows_to_extract} rows (excluding header) from {input_file} and saved to {output_file}.')
