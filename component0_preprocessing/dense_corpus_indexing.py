@@ -373,10 +373,10 @@ def InferenceEmbeddingFromStreamDataLoader(
         if tmp_n % block_size == 0:
             embedding = np.concatenate(embedding, axis=0)
             embedding2id = np.concatenate(embedding2id, axis=0)
-            emb_block_path = os.path.join(args.data_output_path, "passage_emb_block_{}.pb".format(block_id))
+            emb_block_path = os.path.join(args.embedded_output_path, "passage_emb_block_{}.pb".format(block_id))
             with open(emb_block_path, 'wb') as handle:
                 pickle.dump(embedding, handle, protocol=4)
-            embid_block_path = os.path.join(args.data_output_path, "passage_embid_block_{}.pb".format(block_id))
+            embid_block_path = os.path.join(args.embedded_output_path, "passage_embid_block_{}.pb".format(block_id))
             with open(embid_block_path, 'wb') as handle:
                 pickle.dump(embedding2id, handle, protocol=4)
             total_write_passages += len(embedding)
@@ -391,8 +391,8 @@ def InferenceEmbeddingFromStreamDataLoader(
         embedding = np.concatenate(embedding, axis=0)
         embedding2id = np.concatenate(embedding2id, axis=0)
 
-        emb_block_path = os.path.join(args.data_output_path, "passage_emb_block_{}.pb".format(block_id))
-        embid_block_path = os.path.join(args.data_output_path, "passage_embid_block_{}.pb".format(block_id))
+        emb_block_path = os.path.join(args.embedded_output_path, "passage_emb_block_{}.pb".format(block_id))
+        embid_block_path = os.path.join(args.embedded_output_path, "passage_embid_block_{}.pb".format(block_id))
         with open(emb_block_path, 'wb') as handle:
             pickle.dump(embedding, handle, protocol=4)
         with open(embid_block_path, 'wb') as handle:
