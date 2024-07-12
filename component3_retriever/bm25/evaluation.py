@@ -4,10 +4,10 @@
 
 import torch
 import random
+import pytrec_eval
 import numpy as np
 from tqdm import tqdm, trange
 import argparse, logging, os, json
-# from utils import str2bool
 from pyserini.search.lucene import LuceneSearcher
 
 
@@ -54,15 +54,12 @@ def gen_topiocqa_qrel():
                 f.write('\n')
 
 
-
-def main(args):
-    
+def bm25_retriever(args):
+    print("Preprocessing files ...")
     # === Create output directory ============
-    os.makedirs(args.output_dir_path, exist_ok=True)
-    
+    os.makedirs(args.result_qrel_path, exist_ok=True)
     
     # === Read query file ====================
-    # TODO: Create the different versions of query file
     query_path = f"component3_retriever/data/{args.dataset_name}/dev/{args.query_format}.jsonl"
     queries = {}
     with open (query_path, 'r') as file:
@@ -83,25 +80,92 @@ def main(args):
     
     
     # === Retriever Model: pyserini search ===
+    print("Retrieving using BM25 ...")
     searcher = LuceneSearcher(args.index_dir_path)
     searcher.set_bm25(args.bm25_k1, args.bm25_b)
     hits = searcher.batch_search(query_list, qid_list, k=args.top_k, threads=20)
 
     total = 0
-    with open(os.path.join(args.output_dir_path, "dev_bm25_res.trec"), "w") as f:
+    with open(os.path.join(args.result_qrel_path, "dev_bm25_res.trec"), "w") as f:
         for qid in qid_list:
             for i, item in enumerate(hits[qid]):
-                f.write("{} {} {} {} {} {} {}".format(qid,
-                                                "Q0",
-                                                item.docid[3:],
-                                                i+1,
-                                                -i - 1 + 200,
-                                                item.score,
-                                                "bm25"
-                                                ))
+                result_line = f"{qid} Q0 {item.docid[3:]} {i+1} {item.score} bm25"
+                f.write(result_line)
                 f.write('\n')
                 total += 1
     print(total)
+    
+def evaluation(args):
+    print("Evaluating ...")
+    
+    with open(os.path.join(args.result_qrel_path, "dev_bm25_res.trec"), 'r' )as f:
+        run_data = f.readlines()
+    with open(args.gold_qrel_path, 'r') as f:
+        qrel_data = f.readlines()
+    
+    qrels = {}
+    qrels_ndcg = {}
+    runs = {}
+    query_id = []
+
+    for line in qrel_data:
+        line = line.strip().split()
+        query = line[0]
+        passage = line[2]
+        rel = int(line[3])
+        if query not in qrels:
+            qrels[query] = {}
+            query_id.append(query)
+        if query not in qrels_ndcg:
+            qrels_ndcg[query] = {}
+
+        # for NDCG
+        qrels_ndcg[query][passage] = rel
+        # for MAP, MRR, Recall
+        if rel >= args.rel_threshold:
+            rel = 1
+        else:
+            rel = 0
+        qrels[query][passage] = rel
+    
+    for line in run_data:
+        line = line.split(" ")
+        query = line[0]
+        passage = line[2]
+        rel = int(line[4])
+        if query not in runs:
+            runs[query] = {}
+        runs[query][passage] = rel
+
+    # pytrec_eval eval
+    evaluator = pytrec_eval.RelevanceEvaluator(qrels, {"map", "recip_rank", "recall.5", "recall.10", "recall.20", "recall.100"})
+    res = evaluator.evaluate(runs)
+    map_list = [v['map'] for v in res.values()]
+    mrr_list = [v['recip_rank'] for v in res.values()]
+    recall_100_list = [v['recall_100'] for v in res.values()]
+    recall_20_list = [v['recall_20'] for v in res.values()]
+    recall_10_list = [v['recall_10'] for v in res.values()]
+    recall_5_list = [v['recall_5'] for v in res.values()]
+
+    evaluator = pytrec_eval.RelevanceEvaluator(qrels_ndcg, {"ndcg_cut.3"})
+    res = evaluator.evaluate(runs)
+    ndcg_3_list = [v['ndcg_cut_3'] for v in res.values()]
+
+    # context_affect(query_id, mrr_list)
+
+    res = {
+            "MAP": np.average(map_list),
+            "MRR": np.average(mrr_list),
+            "NDCG@3": np.average(ndcg_3_list),
+            "Recall@5": np.average(recall_5_list),
+            "Recall@10": np.average(recall_10_list),
+            "Recall@20": np.average(recall_20_list),
+            "Recall@100": np.average(recall_100_list), 
+        }
+
+    
+    print("---------------------Evaluation results:---------------------")    
+    print(res)
     
     
 
@@ -110,8 +174,8 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
     parser.add_argument("--index_dir_path", type=str, required=True)
-    parser.add_argument("--output_dir_path", type=str, required=True)
-    parser.add_argument("--gold_qrel_file_path", type=str, required=True)
+    parser.add_argument("--result_qrel_path", type=str, required=True)
+    parser.add_argument("--gold_qrel_path", type=str, required=True)
     parser.add_argument("--dataset_name", type=str, default="topiocqa", choices=["topiocqa", "inscit", "qrecc"])
     parser.add_argument("--query_format", type=str, default="original", choices=['original', 'human_rewritten', 'all_history', 'same_topic'])
     
@@ -124,4 +188,5 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     # gen_topiocqa_qrel()
-    main(args)
+    bm25_retriever(args)
+    evaluation(args)
