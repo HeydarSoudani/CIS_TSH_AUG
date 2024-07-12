@@ -533,8 +533,18 @@ if __name__ == "__main__":
     parser.add_argument("--embedded_output_path", type=str, default=EMBEDDED_DOC_DIR)
     args = parser.parse_args()
     
+    args.model_type = model_type
+    args.pretrained_passage_encoder = pretrained_passage_encoder
+    args.max_seq_length = max_seq_length
+    args.max_doc_character = max_doc_character
+    args.per_gpu_eval_batch_size = per_gpu_eval_batch_size
+    args.local_rank = local_rank
+    args.disable_tqdm = disable_tqdm
+    args.n_gpu = n_gpu
+    
     os.makedirs(args.tokenized_output_path, exist_ok=True)
     os.makedirs(args.embedded_output_path, exist_ok=True)
+    
     
     gen_tokenized_doc(args)
     
