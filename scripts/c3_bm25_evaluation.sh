@@ -13,9 +13,8 @@ module load Python/3.10.4-GCCcore-11.3.0
 
 # pip install git+https://github.com/huggingface/transformers
 srun $HOME/TAConvDR/component3_retriever/bm25_evaluation.py \
-    --query_path "" \
-    --index_dir_path "" \
-    --output_dir_path "" \
+    --index_dir_path "corpus/TopiOCQA/bm25_indexes" \
+    --output_dir_path "component3_retriever/results" \
     --gold_qrel_file_path "" \
     --dataset_name "topiocqa" \
     --query_format "original" \
