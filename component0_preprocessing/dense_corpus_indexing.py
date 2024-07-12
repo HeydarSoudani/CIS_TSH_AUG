@@ -440,7 +440,7 @@ def generate_new_ann(args):
     merge = False
 
     logger.info("***** inference of passages *****")
-    passage_collection_path = os.path.join(args.tokenized_passage_collection_dir_path,
+    passage_collection_path = os.path.join(args.tokenized_output_path,
                                            "passages")
     passage_cache = EmbeddingCache(passage_collection_path)
     with passage_cache as emb:
