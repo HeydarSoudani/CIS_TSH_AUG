@@ -117,14 +117,16 @@ class EmbeddingCache:
         return self.total_number
 
 def numbered_byte_file_generator(base_path, file_no, record_size):
+    print(f"file number: {file_no}")
     for i in range(file_no):
-        with open('{}_split{}'.format(base_path, i), 'rb') as f:
-            while True:
-                b = f.read(record_size)
-                if not b:
-                    # eof
-                    break
-                yield b
+        if os.path.exists('{}_split{}'.format(base_path, i)):
+            with open('{}_split{}'.format(base_path, i), 'rb') as f:
+                while True:
+                    b = f.read(record_size)
+                    if not b:
+                        # eof
+                        break
+                    yield b
 
 def tokenize_to_file(args, i, num_process, in_path, out_path, line_fn):
 
