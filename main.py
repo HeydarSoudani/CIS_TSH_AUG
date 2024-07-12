@@ -2,10 +2,10 @@ import csv
 
 # Specify the input and output file paths
 input_file = 'corpus/TopiOCQA/full_wiki_segments.tsv'
-output_file = 'corpus/TopiOCQA/full_wiki_segments_n1000.tsv'
+output_file = 'corpus/TopiOCQA/full_wiki_segments_1m.tsv'
 
 # Number of rows to extract (excluding header)
-num_rows_to_extract = 1000  # Adjust this number as needed
+num_rows_to_extract = 1000000  # Adjust this number as needed
 
 # Open the input file in read mode and output file in write mode
 with open(input_file, 'r', newline='', encoding='utf-8') as infile, \
