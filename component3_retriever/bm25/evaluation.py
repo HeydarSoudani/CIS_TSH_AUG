@@ -86,7 +86,7 @@ def bm25_retriever(args):
     hits = searcher.batch_search(query_list, qid_list, k=args.top_k, threads=20)
 
     total = 0
-    with open(os.path.join(args.result_qrel_path, "dev_bm25_res.trec"), "w") as f:
+    with open(f"{args.result_qrel_path}/{args.dataset_name}_dev_bm25_res_{args.query_format}.trec", "w") as f:
         for qid in qid_list:
             for i, item in enumerate(hits[qid]):
                 result_line = f"{qid} Q0 {item.docid[3:]} {i+1} {item.score} bm25"
@@ -98,7 +98,7 @@ def bm25_retriever(args):
 def evaluation(args):
     print("Evaluating ...")
     
-    with open(os.path.join(args.result_qrel_path, "dev_bm25_res.trec"), 'r' )as f:
+    with open(f"{args.result_qrel_path}/{args.dataset_name}_dev_bm25_res_{args.query_format}.trec", 'r' )as f:
         run_data = f.readlines()
     with open(args.gold_qrel_path, 'r') as f:
         qrel_data = f.readlines()
@@ -132,7 +132,7 @@ def evaluation(args):
         line = line.split(" ")
         query = line[0]
         passage = line[2]
-        rel = int(line[4])
+        rel = int(float(line[4]))
         if query not in runs:
             runs[query] = {}
         runs[query][passage] = rel
@@ -167,9 +167,6 @@ def evaluation(args):
     print("---------------------Evaluation results:---------------------")    
     print(res)
     
-    
-
-
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()

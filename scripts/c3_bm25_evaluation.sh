@@ -12,12 +12,12 @@ module load 2022
 module load Python/3.10.4-GCCcore-11.3.0
 
 # pip install git+https://github.com/huggingface/transformers
-srun $HOME/TAConvDR/component3_retriever/bm25_evaluation.py \
-    --index_dir_path "corpus/TopiOCQA/bm25_indexes" \
-    --output_dir_path "component3_retriever/results" \
-    --gold_qrel_file_path "" \
+srun $HOME/TAConvDR/component3_retriever/bm25/evaluation.py \
+    --index_dir_path "corpus/indexes" \
+    --result_qrel_path "component3_retriever/results" \
+    --gold_qrel_path "component3_retriever/data/topiocqa/dev/qrel_gold.trec" \
     --dataset_name "topiocqa" \
-    --query_format "original" \
+    --query_format "human_rewritten" \
     --seed 42
 
 
