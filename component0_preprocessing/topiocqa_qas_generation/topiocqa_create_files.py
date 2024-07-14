@@ -8,6 +8,14 @@ import csv
 import random
 
 
+# Input: 
+#  - corpus.tsv file
+#  - train & dev files
+# Outputs: 
+#   - evaluation files (gold): train_gold.trec & dev_gold.trec
+#   - 
+
+
 collection_tsv = "corpus/TopiOCQA/full_wiki_segments.tsv"
 collection_json = "datasets/topiocqa/full_wiki_segments.jsonl"
 train = "datasets/topiocqa/topiocqa_train.json"
