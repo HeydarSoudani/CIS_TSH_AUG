@@ -7,7 +7,7 @@ rewrite = "datasets/topiocqa/ir_rewrite_{}.json"
 all_history = "datasets/topiocqa/ir_all_history_{}.json" # contains pos passage id
 
 # === Output files ==============
-dataset_name = "topiocqa" # ["topiocqa", "inscit", "qrecc"]
+dataset_name = "topiocqa"
 output_base_dir = f"component3_retriever/data/{dataset_name}"
 output_train_dir = f"{output_base_dir}/train"
 output_test_dir = f"{output_base_dir}/dev"
