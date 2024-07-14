@@ -8,7 +8,7 @@ import pytrec_eval
 import numpy as np
 from tqdm import tqdm, trange
 import argparse, logging, os, json
-from pyserini.search.lucene import LuceneSearcher
+# from pyserini.search.lucene import LuceneSearcher
 
 
 logging.basicConfig(level=logging.DEBUG,
@@ -20,7 +20,7 @@ os.environ["WANDB_MODE"] = "offline"
 print("Available GPUs:", torch.cuda.device_count())
 device = 'cuda:0'
 
-subset_percentage = 0.1
+subset_percentage = 1.0
 
 def set_seed(seed):
     torch.manual_seed(seed)
@@ -52,7 +52,6 @@ def gen_topiocqa_qrel():
                 pid = int(pos["passage_id"])
                 f.write("{} {} {} {}".format(sample_id, 0, pid, 1))
                 f.write('\n')
-
 
 def bm25_retriever(args):
     print("Preprocessing files ...")
@@ -162,17 +161,97 @@ def evaluation(args):
             "Recall@20": np.average(recall_20_list),
             "Recall@100": np.average(recall_100_list), 
         }
-
-    
     print("---------------------Evaluation results:---------------------")    
     print(res)
     
+def evaluation_per_turn(args):
+    
+    with open(args.gold_qrel_path, 'r') as f:
+        qrel_gold_data = f.readlines()
+    with open(f"{args.result_qrel_path}/{args.dataset_name}_dev_bm25_res_{args.query_format}.trec", 'r' )as f:
+        qrel_result_data = f.readlines()
+        
+    # == Prepare gold qrels ========
+    qrels = {}
+    qrels_ndcg = {}
+    query_id = []
+    for line in qrel_gold_data:
+        line = line.strip().split()
+        query = line[0]
+        passage = line[2]
+        rel = int(line[3])
+        if query not in qrels:
+            qrels[query] = {}
+            query_id.append(query)
+        if query not in qrels_ndcg:
+            qrels_ndcg[query] = {}
+
+        # for NDCG
+        qrels_ndcg[query][passage] = rel
+        # for MAP, MRR, Recall
+        if rel >= args.rel_threshold:
+            rel = 1
+        else:
+            rel = 0
+        qrels[query][passage] = rel
+    
+    
+    # == Prepare result runs ========
+    runs = {}
+    for line in qrel_result_data:
+        line = line.split(" ")
+        
+        turn = int(line[0].split("_")[1])
+        
+        if f"turn_{turn}" not in runs:
+            runs[f"turn_{turn}"] = {}
+        
+        query = line[0]
+        passage = line[2]
+        rel = int(float(line[4]))
+        if query not in runs[f"turn_{turn}"]:
+            runs[f"turn_{turn}"][query] = {}
+        runs[f"turn_{turn}"][query][passage] = rel
+    
+    # print(runs.keys())
+    sorted_runs = {k: runs[k] for k in sorted(runs, key=lambda x: int(x.split('_')[1]))}
+
+    for turn, runs in sorted_runs.items():
+        print(f"Turn: {turn}")
+        
+        # pytrec_eval eval
+        evaluator = pytrec_eval.RelevanceEvaluator(qrels, {"map", "recip_rank", "recall.5", "recall.10", "recall.20", "recall.100"})
+        res = evaluator.evaluate(runs)
+        map_list = [v['map'] for v in res.values()]
+        mrr_list = [v['recip_rank'] for v in res.values()]
+        recall_100_list = [v['recall_100'] for v in res.values()]
+        recall_20_list = [v['recall_20'] for v in res.values()]
+        recall_10_list = [v['recall_10'] for v in res.values()]
+        recall_5_list = [v['recall_5'] for v in res.values()]
+
+        evaluator = pytrec_eval.RelevanceEvaluator(qrels_ndcg, {"ndcg_cut.3"})
+        res = evaluator.evaluate(runs)
+        ndcg_3_list = [v['ndcg_cut_3'] for v in res.values()]
+        
+        res = {
+            "MAP": np.average(map_list),
+            "MRR": np.average(mrr_list),
+            "NDCG@3": np.average(ndcg_3_list),
+            "Recall@5": np.average(recall_5_list),
+            "Recall@10": np.average(recall_10_list),
+            "Recall@20": np.average(recall_20_list),
+            "Recall@100": np.average(recall_100_list), 
+        }
+    print("---------------------Evaluation results:---------------------")    
+    print(res)
+    
+
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("--index_dir_path", type=str, required=True)
-    parser.add_argument("--result_qrel_path", type=str, required=True)
-    parser.add_argument("--gold_qrel_path", type=str, required=True)
+    parser.add_argument("--index_dir_path", type=str, default="corpus/indexes")
+    parser.add_argument("--result_qrel_path", type=str, default="component3_retriever/results")
+    parser.add_argument("--gold_qrel_path", type=str, default="component3_retriever/data/topiocqa/dev/qrel_gold.trec")
     parser.add_argument("--dataset_name", type=str, default="topiocqa", choices=["topiocqa", "inscit", "qrecc"])
     parser.add_argument("--query_format", type=str, default="original", choices=['original', 'human_rewritten', 'all_history', 'same_topic'])
     
@@ -185,5 +264,7 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     # gen_topiocqa_qrel()
-    bm25_retriever(args)
-    evaluation(args)
+    # bm25_retriever(args)
+    # evaluation(args)
+    evaluation_per_turn(args)
+    

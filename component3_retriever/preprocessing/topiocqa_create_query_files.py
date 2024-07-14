@@ -36,7 +36,6 @@ def get_passage_information(subsection="train"):
     
     return passage_info
 
-
 def prepare_quries_original():
     
     ### === For train data =======
@@ -299,10 +298,6 @@ def prepare_quries_same_topic():
                 "passage_id": passage_id,
                 "passage_text": passage_text    
             }) + "\n")
-            
-    
-    
-
 
 
 if __name__ == "__main__":

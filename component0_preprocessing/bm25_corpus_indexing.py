@@ -2,6 +2,12 @@
 ### Ref: https://github.com/fengranMark/HAConvDR
 ### ==============================================================================
 
+# === For running on server - interactive mode
+# ssh gcn1
+# module load 2022
+# module load IPython/8.5.0-GCCcore-11.3.0
+# module load Java/11.0.2
+
 
 import json, os, csv
 from tqdm import tqdm
@@ -35,17 +41,25 @@ if __name__ == "__main__":
     parser.add_argument("--output_file", type=str, default=OUTPUT_FILE)
     args = parser.parse_args()
     
-    # = Step 1) download corpus
+    # = Step 1) needed libraries
+    # pip install -q faiss-gpu==1.7.2
+    # pip install pyserini==0.16
+    # pip install -q pytrec_eval
+    
+    # = Step 2) download corpus
     # wget https://zenodo.org/records/6149599/files/data/wikipedia_split/full_wiki_segments.tsv -O datasets/topiocqa/full_wiki_segments.tsv
     
-    # = Step 2) Convert corpus to pyserini file
+    # = Step 3) Convert corpus to pyserini file
+    # python component0_preprocessing/bm25_corpus_indexing.py \
+    #     --wiki_file "corpus/TopiOCQA/full_wiki_segments.tsv" \
+    #     --output_file "corpus/TopiOCQA/full_wiki_segments_pyserini_format.jsonl"
     convert_to_pyserini_file(args)
     
-    # = Step 3) Index corpus using pyserini
+    # = Step 4) Index corpus using pyserini
     # python -m pyserini.index -collection JsonCollection \
     #                         -generator DefaultLuceneDocumentGenerator \
     #                         -threads 20 \
-    #                         -input ${INPUT} \
-    #                         -index ${OUTPUT} \
-	# 						-storePositions -storeDocvectors -storeRaw
+    #                         -input "corpus/TopiOCQA" \
+    #                         -index "corpus/indexes" \
+	# 						  -storePositions -storeDocvectors -storeRaw
     
