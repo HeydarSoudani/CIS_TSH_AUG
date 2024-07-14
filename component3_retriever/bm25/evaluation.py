@@ -20,7 +20,7 @@ os.environ["WANDB_MODE"] = "offline"
 print("Available GPUs:", torch.cuda.device_count())
 device = 'cuda:0'
 
-subset_percentage = 0.1
+subset_percentage = 1.0
 
 def set_seed(seed):
     torch.manual_seed(seed)
