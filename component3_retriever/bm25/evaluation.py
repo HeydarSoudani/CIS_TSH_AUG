@@ -216,6 +216,15 @@ def evaluation_per_turn(args):
     # print(runs.keys())
     sorted_runs = {k: runs[k] for k in sorted(runs, key=lambda x: int(x.split('_')[1]))}
 
+    results_per_turns = {
+        "MAP": [],
+        "MRR": [],
+        "NDCG@3": [],
+        "Recall@5": [],
+        "Recall@10": [],
+        "Recall@20": [],
+        "Recall@100": [],
+    }
     for turn, runs in sorted_runs.items():
         print(f"Turn: {turn}")
         
@@ -233,6 +242,7 @@ def evaluation_per_turn(args):
         res = evaluator.evaluate(runs)
         ndcg_3_list = [v['ndcg_cut_3'] for v in res.values()]
         
+        print("---------------------Evaluation results:---------------------")
         res = {
             "MAP": np.average(map_list),
             "MRR": np.average(mrr_list),
@@ -241,9 +251,20 @@ def evaluation_per_turn(args):
             "Recall@10": np.average(recall_10_list),
             "Recall@20": np.average(recall_20_list),
             "Recall@100": np.average(recall_100_list), 
-        }
-    print("---------------------Evaluation results:---------------------")    
-    print(res)
+        }  
+        print(res)
+        
+        results_per_turns["MAP"].append(np.average(map_list))
+        results_per_turns["MRR"].append(np.average(mrr_list))
+        results_per_turns["NDCG@3"].append(np.average(ndcg_3_list))
+        results_per_turns["Recall@5"].append(np.average(recall_5_list))
+        results_per_turns["Recall@10"].append(np.average(recall_10_list))
+        results_per_turns["Recall@20"].append(np.average(recall_20_list))
+        results_per_turns["Recall@100"].append(np.average(recall_100_list))
+    print("---------------------Evaluation results (per turn):----------")
+    print(results_per_turns)
+        
+        
     
 
 if __name__ == "__main__":
