@@ -111,14 +111,29 @@ if __name__ == "__main__":
     
     
     # = Step 3) Convert corpus to pyserini file
-    convert_to_pyserini_file(args)
+    # convert_to_pyserini_file(args)
     
     
     # = Step 4) Index corpus using pyserini
-    # python -m pyserini.index -collection JsonCollection \
-    #                         -generator DefaultLuceneDocumentGenerator \
-    #                         -threads 20 \
-    #                         -input "corpus/INSCIT" \
-    #                         -index "corpus/INSCIT/bm25_index" \
-	# 						  -storePositions -storeDocvectors -storeRaw
+    # python -m pyserini.index -collection JsonCollection -generator DefaultLuceneDocumentGenerator -threads 20 -input "corpus/INSCIT" -index "corpus/INSCIT/bm25_index" -storePositions -storeDocvectors -storeRaw
+
+
+    # with open('corpus/INSCIT/full_wiki_segments_pyserini_format.jsonl', 'r') as file:
+    #     file.readline()
+    #     file.readline()
+    #     file.readline()
+    #     first_line = file.readline()
+    #     first_json_object = json.loads(first_line)
+    # print(first_json_object)
+    
+
+    # tsv_file_path = 'corpus/INSCIT/full_wiki_segments.tsv'
+    # with open(tsv_file_path, 'r') as file:
+    #     reader = csv.reader(file, delimiter='\t')
+    #     next(reader)
+    #     next(reader)
+    #     next(reader)
+    #     next(reader)
+    #     first_line = next(reader)
+    # print(first_line)
 
