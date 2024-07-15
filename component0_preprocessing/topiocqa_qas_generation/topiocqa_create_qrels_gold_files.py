@@ -34,6 +34,29 @@ id_col= 0
 text_col= 1
 title_col = 2
 
+
+# # def gen_topiocqa_qrel(raw_dev_file_path, output_qrel_file_path):
+# def gen_topiocqa_qrel():
+#     '''
+#     raw_dev_file_path = "gold_dev.json"
+#     output_qrel_file_path = "topiocqa_qrel.trec"
+#     '''
+#     raw_dev_file_path = 'datasets/TopiOCQA/ir_all_history_dev.json'
+#     output_qrel_file_path = 'component3_retriever/data/topiocqa/dev/qrel_gold.trec'
+    
+#     with open(raw_dev_file_path, "r") as f:
+#         data = json.load(f)
+    
+#     with open(output_qrel_file_path, "w") as f:
+#         for line in tqdm(data):
+#             sample_id = "{}_{}".format(line["conv_id"], line["turn_id"])
+#             for pos in line["positive_ctxs"]:
+#                 #pid = int(pos["passage_id"]) - 1
+#                 pid = int(pos["passage_id"])
+#                 f.write("{} {} {} {}".format(sample_id, 0, pid, 1))
+#                 f.write('\n')
+
+
 # .tsv -> .jsonl
 def convert_collection(collection_tsv, collection_json):
     with open(collection_tsv, 'r') as input, open(collection_json, 'w') as output:
@@ -60,7 +83,7 @@ def load_collection(collection_file, title = False):
             for line in f:
                 line = line.strip()
                 obj = json.loads(line)
-                pid = int(obj["id"][3:])
+                pid = int(obj["id"][3:]) # remove "doc" keyword from doc_id 
                 #passage = obj["title"] + "[SEP]" + obj["text"]
                 passage = obj["title"] + obj["text"]
                 all_passages[pid] = passage
