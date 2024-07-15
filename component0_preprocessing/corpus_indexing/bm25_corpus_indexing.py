@@ -72,7 +72,7 @@ def convert_corpus_to_tsv():
             process_file(dir_or_file, output_file)
 
 def convert_to_pyserini_file(args):
-    corpus_file = f"corpus/{args.dataset_name}/full_wiki_segments.tsv"    
+    corpus_file = f"corpus/{args.dataset_name}/full_wiki_segments.tsv"
     output_file = f"corpus/{args.dataset_name}/full_wiki_segments_pyserini_format.jsonl"
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     
@@ -87,6 +87,7 @@ def convert_to_pyserini_file(args):
                 title = ' '.join(title.split(' [SEP] '))
                 obj = {"contents": " ".join([title, text]), "id": f"doc{i}"}
                 output.write(json.dumps(obj, ensure_ascii=False) + '\n')
+
 
 
 if __name__ == "__main__":
@@ -128,13 +129,16 @@ if __name__ == "__main__":
     # print(first_json_object)
     
 
-    # tsv_file_path = 'corpus/INSCIT/full_wiki_segments.tsv'
-    # with open(tsv_file_path, 'r') as file:
-    #     reader = csv.reader(file, delimiter='\t')
-    #     next(reader)
-    #     next(reader)
-    #     next(reader)
-    #     next(reader)
-    #     first_line = next(reader)
-    # print(first_line)
+    tsv_file_path = 'corpus/INSCIT/full_wiki_segments.tsv'
+    with open(tsv_file_path, 'r') as file:
+        reader = csv.reader(file, delimiter='\t')
+        next(reader)
+        next(reader)
+        next(reader)
+        next(reader)
+        first_line = next(reader)
+    print(first_line)
 
+
+    # python component0_preprocessing/corpus_indexing/bm25_corpus_indexing.py
+    

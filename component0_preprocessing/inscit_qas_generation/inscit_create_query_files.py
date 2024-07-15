@@ -1,4 +1,8 @@
-import json, os
+import json, os, csv
+from tqdm import tqdm
+
+csv.field_size_limit(10**6)
+
 
 def prepare_qrels_gold():
     pass
@@ -51,7 +55,6 @@ def prepare_quries_original():
                     "passages": passages
                 }) + "\n")
 
-
 def prepare_quries_human_rewritten():
     pass
 
@@ -61,13 +64,76 @@ def prepare_quries_all_history():
 def prepare_quries_same_topic():
     pass
 
+def title2id():
+    id_col= 0
+    text_col= 1
+    title_col = 2
+    corpus_file = "corpus/INSCIT/full_wiki_segments.tsv"
+    title2id_file = "corpus/INSCIT/title2ids.json"
+    
+    t2id_obj = {}
+    with open(corpus_file, 'r') as input:
+        reader = csv.reader(input, delimiter="\t")
+        for i, row in enumerate(tqdm(reader)):
+            if row[id_col] == "id":
+                continue
+            
+            psg_id = row[id_col]
+            t2id_obj[psg_id] = f"doc{i}"
+    
+    with open(title2id_file, 'w') as file:
+        json.dump(t2id_obj, file, indent=2)
+
 def add_pid_to_data_files():
     subsec = "dev"
     query_format = "original" # original, human_rewritten, all_history, same_topic
     data_file = f'component3_retriever/data/INSCIT/{subsec}/{query_format}.jsonl'
+    output_file = f'component3_retriever/data/INSCIT/{subsec}/{query_format}_new.jsonl'
+    
+    print("Loading t2id file ...")
+    with open("corpus/INSCIT/title2ids.json", 'r') as file:
+        title2ids_data = json.load(file)
+    
+    def get_value_with_exception_handling(key):
+        try:
+            return title2ids_data[key]
+        except KeyError:
+            print(f"Key {key} not found")
+            return 0
     
     
-    
+    print("Merging id to data ...")
+    with open(data_file, 'r') as in_file, open(output_file, 'w') as out_file:
+        
+        for i, line in enumerate(tqdm(in_file)):
+            # if i == 5:
+            #     break
+            turn_object = json.loads(line.strip())
+            passages = turn_object["passages"]
+            
+            new_passages_list = []
+            for psg in passages:
+                # psg_id = title2ids_data(psg['passage_title_id'])
+                psg_id = get_value_with_exception_handling(psg['passage_title_id'])
+                new_psg = {
+                    "title": psg["title"],
+                    "text": psg["text"],
+                    "score": psg["score"],
+                    "title_score": psg["title_score"],
+                    "passage_title_id": psg["passage_title_id"],
+                    "passage_id": psg_id[3:]
+                }
+                new_passages_list.append(new_psg)
+            
+            out_file.write(json.dumps({
+                    "id": turn_object["id"],
+                    "conv_name": turn_object["conv_name"],
+                    "conv_id": turn_object["conv_id"],
+                    "turn_id": turn_object["turn_id"],
+                    "query": turn_object["query"],
+                    "answers": turn_object["answers"],
+                    "passages": new_passages_list
+                }) + "\n")
     
 
 if __name__ == "__main__":
@@ -79,7 +145,9 @@ if __name__ == "__main__":
     # prepare_quries_same_topic()
     
     # === Add passage id to the data files ========
-    add_pid_to_data_files()
+    # title2id()
+    # add_pid_to_data_files()
+
     
     
     # python component0_preprocessing/inscit_qas_generation/inscit_create_query_files.py
