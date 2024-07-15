@@ -32,7 +32,6 @@ def set_seed(seed):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-
 def bm25_retriever(args):
     
     print("Preprocessing files ...")
@@ -80,7 +79,8 @@ def bm25_retriever(args):
 def evaluation(args):
     print("Evaluating ...")
     
-    with open(f"{args.result_qrel_path}/{args.dataset_name}_dev_bm25_res_{args.query_format}.trec", 'r' )as f:
+    input_file = f"{args.result_qrel_base_path}/{args.dataset_name}/dev_bm25_{args.query_format}_results.trec"
+    with open(input_file, 'r' )as f:
         run_data = f.readlines()
     with open(args.gold_qrel_path, 'r') as f:
         qrel_data = f.readlines()
@@ -263,8 +263,8 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    bm25_retriever(args)
-    # evaluation(args)
+    # bm25_retriever(args)
+    evaluation(args)
     # evaluation_per_turn(args)
     
     # python component3_retriever/bm25/evaluation.py

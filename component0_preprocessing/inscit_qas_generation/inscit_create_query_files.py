@@ -5,7 +5,17 @@ csv.field_size_limit(10**6)
 
 
 def prepare_qrels_gold():
-    pass
+    gold_file = "component3_retriever/data/INSCIT/dev/original.jsonl"
+    trec_file = "component3_retriever/data/INSCIT/dev/qrels_gold.trec"
+    
+    with open(gold_file, 'r') as f, open(trec_file, 'w') as g:
+        for line in f:
+            turn_obj = json.loads(line.strip())
+            qid = turn_obj["id"]
+            for psg in turn_obj["passages"]:
+                g.write("{} {} {} {}".format(qid, "Q0", psg["passage_id"], 1))
+                g.write('\n')
+
 
 # Src: https://github.com/ellenmellon/INSCIT/blob/main/models/DPR/prepare_data.py
 def prepare_quries_original():
@@ -138,8 +148,8 @@ def add_pid_to_data_files():
 
 if __name__ == "__main__":
         
-    # prepare_qrels_gold()
-    prepare_quries_original()
+    prepare_qrels_gold()
+    # prepare_quries_original()
     # prepare_quries_human_rewritten()
     # prepare_quries_all_history()
     # prepare_quries_same_topic()
