@@ -8,7 +8,7 @@ import pytrec_eval
 import numpy as np
 from tqdm import tqdm, trange
 import argparse, logging, os, json
-# from pyserini.search.lucene import LuceneSearcher
+from pyserini.search.lucene import LuceneSearcher
 
 
 logging.basicConfig(level=logging.DEBUG,
@@ -34,9 +34,12 @@ def set_seed(seed):
 
 
 def bm25_retriever(args):
+    
     print("Preprocessing files ...")
-    # === Create output directory ============
-    os.makedirs(args.result_qrel_path, exist_ok=True)
+    output_res_file = f"{args.result_qrel_base_path}/{args.dataset_name}/dev_bm25_{args.query_format}_results.trec"
+    os.makedirs(args.result_qrel_base_path, exist_ok=True)
+    os.makedirs(f"{args.result_qrel_base_path}/{args.dataset_name}", exist_ok=True)
+    index_dir = f"{args.index_dir_base_path}/{args.dataset_name}/bm25_index"
     
     # === Read query file ====================
     query_path = f"component3_retriever/data/{args.dataset_name}/dev/{args.query_format}.jsonl"
@@ -60,12 +63,12 @@ def bm25_retriever(args):
     
     # === Retriever Model: pyserini search ===
     print("Retrieving using BM25 ...")
-    searcher = LuceneSearcher(args.index_dir_path)
+    searcher = LuceneSearcher(index_dir)
     searcher.set_bm25(args.bm25_k1, args.bm25_b)
     hits = searcher.batch_search(query_list, qid_list, k=args.top_k, threads=20)
 
     total = 0
-    with open(f"{args.result_qrel_path}/{args.dataset_name}_dev_bm25_res_{args.query_format}.trec", "w") as f:
+    with open(output_res_file, "w") as f:
         for qid in qid_list:
             for i, item in enumerate(hits[qid]):
                 result_line = f"{qid} Q0 {item.docid[3:]} {i+1} {item.score} bm25"
@@ -247,10 +250,10 @@ def evaluation_per_turn(args):
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("--index_dir_path", type=str, default="corpus/indexes")
-    parser.add_argument("--result_qrel_path", type=str, default="component3_retriever/results")
+    parser.add_argument("--index_dir_base_path", type=str, default="corpus")
+    parser.add_argument("--result_qrel_base_path", type=str, default="component3_retriever/results")
     parser.add_argument("--gold_qrel_path", type=str, default="component3_retriever/data/topiocqa/dev/qrel_gold.trec")
-    parser.add_argument("--dataset_name", type=str, default="topiocqa", choices=["topiocqa", "inscit", "qrecc"])
+    parser.add_argument("--dataset_name", type=str, default="INSCIT", choices=["TopiOCQA", "INSCIT", "qrecc"])
     parser.add_argument("--query_format", type=str, default="original", choices=['original', 'human_rewritten', 'all_history', 'same_topic'])
     parser.add_argument("--bm25_k1", type=float, default="0.9")
     parser.add_argument("--bm25_b", type=float, default="0.4")
@@ -260,7 +263,9 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    # bm25_retriever(args)
+    bm25_retriever(args)
     # evaluation(args)
-    evaluation_per_turn(args)
+    # evaluation_per_turn(args)
+    
+    # python component3_retriever/bm25/evaluation.py
     

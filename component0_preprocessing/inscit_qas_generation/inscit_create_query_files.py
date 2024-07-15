@@ -15,7 +15,7 @@ def prepare_quries_original():
         content = json.load(fin)
         for cid, cname in enumerate(content):
             for tid, turn in enumerate(content[cname]['turns']):
-                conv_id = cid
+                conv_id = cid + 1
                 conv_name = cname
                 turn_id = tid + 1
                 query_id = f"{conv_id}_{turn_id}"
