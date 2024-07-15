@@ -34,7 +34,6 @@ from src.utils import (
     EmbeddingCache,
 )
 
-
 WIKI_FILE = "corpus/TopiOCQA/full_wiki_segments.tsv"
 TOKENIZED_DOC_DIR = "corpus/TopiOCQA/dense_tokenized"
 EMBEDDED_DOC_DIR = "corpus/TopiOCQA/dense_embedded"
@@ -427,9 +426,6 @@ def StreamInferenceDoc(args,
         inference_dataloader,
         is_query_inference=is_query_inference,
         )
-
-
-
     logger.info("merging embeddings")
 
 def generate_new_ann(args):
@@ -547,10 +543,10 @@ if __name__ == "__main__":
     os.makedirs(args.tokenized_output_path, exist_ok=True)
     os.makedirs(args.embedded_output_path, exist_ok=True)
     
-    
     gen_tokenized_doc(args)
     
     args.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print("device:", args.device)
     gen_doc_embeddings(args)
     
     
