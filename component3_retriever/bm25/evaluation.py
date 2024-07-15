@@ -32,26 +32,6 @@ def set_seed(seed):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-# def gen_topiocqa_qrel(raw_dev_file_path, output_qrel_file_path):
-def gen_topiocqa_qrel():
-    '''
-    raw_dev_file_path = "gold_dev.json"
-    output_qrel_file_path = "topiocqa_qrel.trec"
-    '''
-    raw_dev_file_path = 'datasets/TopiOCQA/ir_all_history_dev.json'
-    output_qrel_file_path = 'component3_retriever/data/topiocqa/dev/qrel_gold.trec'
-    
-    with open(raw_dev_file_path, "r") as f:
-        data = json.load(f)
-    
-    with open(output_qrel_file_path, "w") as f:
-        for line in tqdm(data):
-            sample_id = "{}_{}".format(line["conv_id"], line["turn_id"])
-            for pos in line["positive_ctxs"]:
-                #pid = int(pos["passage_id"]) - 1
-                pid = int(pos["passage_id"])
-                f.write("{} {} {} {}".format(sample_id, 0, pid, 1))
-                f.write('\n')
 
 def bm25_retriever(args):
     print("Preprocessing files ...")
@@ -264,9 +244,6 @@ def evaluation_per_turn(args):
     print("---------------------Evaluation results (per turn):----------")
     print(results_per_turns)
         
-        
-    
-
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
@@ -275,16 +252,14 @@ if __name__ == "__main__":
     parser.add_argument("--gold_qrel_path", type=str, default="component3_retriever/data/topiocqa/dev/qrel_gold.trec")
     parser.add_argument("--dataset_name", type=str, default="topiocqa", choices=["topiocqa", "inscit", "qrecc"])
     parser.add_argument("--query_format", type=str, default="original", choices=['original', 'human_rewritten', 'all_history', 'same_topic'])
-    
     parser.add_argument("--bm25_k1", type=float, default="0.9")
     parser.add_argument("--bm25_b", type=float, default="0.4")
     parser.add_argument("--top_k", type=int, default="100")
     parser.add_argument("--rel_threshold", type=int, default="1")
-    
     parser.add_argument("--seed", type=int)
     
     args = parser.parse_args()
-    # gen_topiocqa_qrel()
+    
     # bm25_retriever(args)
     # evaluation(args)
     evaluation_per_turn(args)
