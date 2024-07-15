@@ -5,8 +5,9 @@ csv.field_size_limit(10**6)
 
 
 def prepare_qrels_gold():
-    gold_file = "component3_retriever/data/INSCIT/dev/original.jsonl"
-    trec_file = "component3_retriever/data/INSCIT/dev/qrel_gold.trec"
+    subsec = "test"
+    gold_file = f"component3_retriever/data/INSCIT/{subsec}/original.jsonl"
+    trec_file = f"component3_retriever/data/INSCIT/{subsec}/qrel_gold.trec"
     
     with open(gold_file, 'r') as f, open(trec_file, 'w') as g:
         for line in f:
@@ -139,8 +140,8 @@ def title2id():
         json.dump(t2id_obj, file, indent=2)
 
 def add_pid_to_data_files():
-    subsec = "dev"
-    query_format = "original" # original, human_rewritten, all_history, same_topic
+    subsec = "test"
+    query_format = "all_history" # original, human_rewritten, all_history, same_topic
     data_file = f'component3_retriever/data/INSCIT/{subsec}/{query_format}.jsonl'
     output_file = f'component3_retriever/data/INSCIT/{subsec}/{query_format}_new.jsonl'
     
@@ -154,7 +155,6 @@ def add_pid_to_data_files():
         except KeyError:
             print(f"Key {key} not found")
             return 0
-    
     
     print("Merging id to data ...")
     with open(data_file, 'r') as in_file, open(output_file, 'w') as out_file:
@@ -192,7 +192,7 @@ def add_pid_to_data_files():
 
 if __name__ == "__main__":
         
-    prepare_qrels_gold()
+    # prepare_qrels_gold()
     # prepare_quries_original()
     # prepare_quries_all_history()
     # prepare_quries_same_topic()
@@ -201,7 +201,7 @@ if __name__ == "__main__":
     
     # === Add passage id to the data files ========
     # title2id()
-    # add_pid_to_data_files()
+    add_pid_to_data_files()
 
     
     

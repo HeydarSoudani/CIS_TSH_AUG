@@ -35,13 +35,15 @@ def set_seed(seed):
 def bm25_retriever(args):
     
     print("Preprocessing files ...")
-    output_res_file = f"{args.result_qrel_base_path}/{args.dataset_name}/dev_bm25_{args.query_format}_results.trec"
+    output_res_file = f"{args.result_qrel_base_path}/{args.dataset_name}/{args.dataset_subsec}/bm25_{args.query_format}_results.trec"
     os.makedirs(args.result_qrel_base_path, exist_ok=True)
     os.makedirs(f"{args.result_qrel_base_path}/{args.dataset_name}", exist_ok=True)
+    os.makedirs(f"{args.result_qrel_base_path}/{args.dataset_name}/{args.dataset_subsec}", exist_ok=True)
+    
     index_dir = f"{args.index_dir_base_path}/{args.dataset_name}/bm25_index"
     
     # === Read query file ====================
-    query_path = f"component3_retriever/data/{args.dataset_name}/dev/{args.query_format}.jsonl"
+    query_path = f"component3_retriever/data/{args.dataset_name}/{args.dataset_subsec}/{args.query_format}.jsonl"
     queries = {}
     with open (query_path, 'r') as file:
         for line in file:
@@ -78,12 +80,11 @@ def bm25_retriever(args):
     
 def bm25_evaluation(args):
     print("Evaluating ...")
-    
-    input_file = f"{args.result_qrel_base_path}/{args.dataset_name}/dev_bm25_{args.query_format}_results.trec"
+    input_file = f"{args.result_qrel_base_path}/{args.dataset_name}/{args.dataset_subsec}/bm25_{args.query_format}_results.trec"
     with open(input_file, 'r' )as f:
         run_data = f.readlines()
     
-    gold_qrel_file = f"component3_retriever/data/{args.dataset_name}/dev/qrel_gold.trec"
+    gold_qrel_file = f"component3_retriever/data/{args.dataset_name}/{args.dataset_subsec}/qrel_gold.trec"
     with open(gold_qrel_file, 'r') as f:
         qrel_data = f.readlines()
     
@@ -255,7 +256,8 @@ if __name__ == "__main__":
     parser.add_argument("--index_dir_base_path", type=str, default="corpus")
     parser.add_argument("--result_qrel_base_path", type=str, default="component3_retriever/results")
     parser.add_argument("--dataset_name", type=str, default="INSCIT", choices=["TopiOCQA", "INSCIT", "qrecc"])
-    parser.add_argument("--query_format", type=str, default="original", choices=['original', 'human_rewritten', 'all_history', 'same_topic'])
+    parser.add_argument("--dataset_subsec", type=str, default="test", choices=["train", "dev", "test"])
+    parser.add_argument("--query_format", type=str, default="all_history", choices=['original', 'human_rewritten', 'all_history', 'same_topic'])
     parser.add_argument("--bm25_k1", type=float, default="0.9")
     parser.add_argument("--bm25_b", type=float, default="0.4")
     parser.add_argument("--top_k", type=int, default="100")
@@ -264,7 +266,7 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    # bm25_retriever(args)
+    bm25_retriever(args)
     bm25_evaluation(args)
     # evaluation_per_turn(args)
     
