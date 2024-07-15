@@ -76,13 +76,15 @@ def bm25_retriever(args):
                 total += 1
     print(total)
     
-def evaluation(args):
+def bm25_evaluation(args):
     print("Evaluating ...")
     
     input_file = f"{args.result_qrel_base_path}/{args.dataset_name}/dev_bm25_{args.query_format}_results.trec"
     with open(input_file, 'r' )as f:
         run_data = f.readlines()
-    with open(args.gold_qrel_path, 'r') as f:
+    
+    gold_qrel_file = f"component3_retriever/data/{args.dataset_name}/dev/qrel_gold.trec"
+    with open(gold_qrel_file, 'r') as f:
         qrel_data = f.readlines()
     
     qrels = {}
@@ -252,7 +254,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--index_dir_base_path", type=str, default="corpus")
     parser.add_argument("--result_qrel_base_path", type=str, default="component3_retriever/results")
-    parser.add_argument("--gold_qrel_path", type=str, default="component3_retriever/data/topiocqa/dev/qrel_gold.trec")
     parser.add_argument("--dataset_name", type=str, default="INSCIT", choices=["TopiOCQA", "INSCIT", "qrecc"])
     parser.add_argument("--query_format", type=str, default="original", choices=['original', 'human_rewritten', 'all_history', 'same_topic'])
     parser.add_argument("--bm25_k1", type=float, default="0.9")
@@ -264,7 +265,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     
     # bm25_retriever(args)
-    evaluation(args)
+    bm25_evaluation(args)
     # evaluation_per_turn(args)
     
     # python component3_retriever/bm25/evaluation.py

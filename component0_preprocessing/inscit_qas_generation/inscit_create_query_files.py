@@ -6,7 +6,7 @@ csv.field_size_limit(10**6)
 
 def prepare_qrels_gold():
     gold_file = "component3_retriever/data/INSCIT/dev/original.jsonl"
-    trec_file = "component3_retriever/data/INSCIT/dev/qrels_gold.trec"
+    trec_file = "component3_retriever/data/INSCIT/dev/qrel_gold.trec"
     
     with open(gold_file, 'r') as f, open(trec_file, 'w') as g:
         for line in f:
