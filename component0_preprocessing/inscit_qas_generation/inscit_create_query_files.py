@@ -34,7 +34,7 @@ def prepare_quries_original():
                         pos_ctx["score"] = 1000
                         pos_ctx["title_score"] = 1
                         pid = e['passage_id']
-                        pos_ctx['passage_id'] = pid
+                        pos_ctx['passage_title_id'] = pid
                         if pid in added:
                             continue
                         added.add(pid)
@@ -61,6 +61,14 @@ def prepare_quries_all_history():
 def prepare_quries_same_topic():
     pass
 
+def add_pid_to_data_files():
+    subsec = "dev"
+    query_format = "original" # original, human_rewritten, all_history, same_topic
+    data_file = f'component3_retriever/data/INSCIT/{subsec}/{query_format}.jsonl'
+    
+    
+    
+    
 
 if __name__ == "__main__":
         
@@ -70,5 +78,10 @@ if __name__ == "__main__":
     # prepare_quries_all_history()
     # prepare_quries_same_topic()
     
+    # === Add passage id to the data files ========
+    add_pid_to_data_files()
+    
+    
+    # python component0_preprocessing/inscit_qas_generation/inscit_create_query_files.py
     
 
