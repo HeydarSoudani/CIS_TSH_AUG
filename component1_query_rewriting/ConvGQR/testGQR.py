@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 ### ==============================================================================
 # Ref: https://github.com/fengranMark/ConvGQR/blob/main/src/test_GQR.py
 ### ==============================================================================
@@ -82,7 +84,7 @@ def inference_t5qr(args):
                     elif args.decode_type == "next_q":
                         record["next_q_utt_text"] = outputs[i]
                     record["cur_utt_text"] = batch["bt_cur_utt_text"][i]
-                    record["ctx_utts_text"] = batch["bt_ctx_utts_text"][i]
+                    # record["ctx_utts_text"] = batch["bt_ctx_utts_text"][i]
                     record["original_oracle_utt_text"] = batch["bt_oracle_utt_text"][i]
                     f.write(json.dumps(record) + '\n') 
 
@@ -92,9 +94,9 @@ def inference_t5qr(args):
 def get_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--model_checkpoint_path", type=str, default="output/train_qrecc/Checkpoint/KD-ANCE-prefix-oracle-0.5-best-model")
-    parser.add_argument("--test_file_path", type=str, default="datasets/qrecc/new_preprocessed/test.json")
-    parser.add_argument('--output_file_path', type=str, default="output/qrecc/QR/test_QRIR_oracle_prefix.json")
+    parser.add_argument("--model_checkpoint_path", type=str, default="output/train_topiocqa/Checkpoint/KD-ANCE-prefix-oracle-best-model")
+    parser.add_argument("--test_file_path", type=str, default="datasets/TopiOCQA/dev_new.json")
+    parser.add_argument('--output_file_path', type=str, default="output/train_topiocqa/QR/test_QRIR_oracle_prefix.json")
     parser.add_argument("--collate_fn_type", type=str, default="flat_concat_for_test")
     parser.add_argument("--decode_type", type=str, default="oracle")
     parser.add_argument("--model_type", type=str, default="T5")
@@ -132,3 +134,5 @@ if __name__ == '__main__':
     logger.info(args)
 
     inference_t5qr(args)
+    
+    # python component1_query_rewriting/ConvGQR/testGQR.py

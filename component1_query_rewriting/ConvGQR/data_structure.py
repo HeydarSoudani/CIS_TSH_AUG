@@ -720,7 +720,6 @@ class T5RewriterDataset_topiocqa(Dataset):
                                         cur_utt_text,
                                         oracle_utt_text])
 
-    
     def __len__(self):
         return len(self.examples)
 

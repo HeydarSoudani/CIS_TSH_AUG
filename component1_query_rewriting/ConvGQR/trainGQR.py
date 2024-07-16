@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+
 ### ==============================================================================
 # Ref: https://github.com/fengranMark/ConvGQR/blob/main/src/train_GQR.py
 ### ==============================================================================
@@ -171,16 +174,16 @@ def train(args, log_writer):
 def get_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--pretrained_query_encoder", type=str, default="checkpoints/T5-base")
-    parser.add_argument("--pretrained_passage_encoder", type=str, default="checkpoints/ad-hoc-ance-msmarco")
-    parser.add_argument("--train_file_path", type=str, default="processed_dataset/TopiOCQA/train/train_with_doc.json")
+    parser.add_argument("--pretrained_query_encoder", type=str, default="google-t5/t5-base")
+    parser.add_argument("--pretrained_passage_encoder", type=str, default="sentence-transformers/msmarco-roberta-base-ance-firstp")
+    parser.add_argument("--train_file_path", type=str, default="processed_datasets/TopiOCQA/train/train_with_doc.json")
     parser.add_argument("--log_dir_path", type=str, default="output/train_topiocqa/Log")
     parser.add_argument('--model_output_path', type=str, default="output/train_topiocqa/Checkpoint")
     
     parser.add_argument("--collate_fn_type", type=str, default="flat_concat_for_train")
-    parser.add_argument("--decode_type", type=str, default="oracle")
+    parser.add_argument("--decode_type", type=str, default="answer")
     parser.add_argument("--use_prefix", type=bool, default=True)
-    parser.add_argument("--per_gpu_train_batch_size", type=int,  default=8)
+    parser.add_argument("--per_gpu_train_batch_size", type=int,  default=16)
     parser.add_argument("--use_data_percent", type=float, default=1)
     
     parser.add_argument("--num_train_epochs", type=int, default=15, help="num_train_epochs")
@@ -205,7 +208,7 @@ def get_args():
     # pytorch parallel gpu
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")#, args.local_rank)
     args.device = device
-
+    print(f"Device: {args.device}")
     return args
 
 
@@ -215,3 +218,5 @@ if __name__ == '__main__':
     log_writer = SummaryWriter(log_dir = args.log_dir_path)
     train(args, log_writer)
     log_writer.close()
+    
+    # python component1_query_rewriting/ConvGQR/trainGQR.py
