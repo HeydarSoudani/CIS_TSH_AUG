@@ -10,9 +10,9 @@
 # Loading modules
 module load 2022
 module load Python/3.10.4-GCCcore-11.3.0
-module load IPython/8.5.0-GCCcore-11.3.0
+# module load IPython/8.5.0-GCCcore-11.3.0
 
-srun $HOME/TAConvDR/component1_query_rewriting/T5QR/train_t5qr.py \
+srun $HOME/CIS_TSH_AUG/component1_query_rewriting/T5QR/train_t5qr.py \
     --model_path "google-t5/t5-base" \
     --train_file_path=$train_file_path \
     --dev_file_path=$dev_file_path \

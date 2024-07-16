@@ -10,7 +10,7 @@
 # Loading modules
 module load 2022
 module load Python/3.10.4-GCCcore-11.3.0
-module load IPython/8.5.0-GCCcore-11.3.0
+# module load IPython/8.5.0-GCCcore-11.3.0
 
 srun $HOME/CIS_TSH_AUG/component1_query_rewriting/ConvGQR/trainGQR.py
 
