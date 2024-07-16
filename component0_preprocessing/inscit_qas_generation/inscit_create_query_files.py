@@ -204,7 +204,7 @@ def title2id():
 
 def add_pid_to_data_files():
     subsec = "test"
-    query_format = "all_history" # original, human_rewritten, all_history, same_topic
+    query_format = "same_topic" # original, human_rewritten, all_history, same_topic
     data_file = f'component3_retriever/data/INSCIT/{subsec}/{query_format}.jsonl'
     output_file = f'component3_retriever/data/INSCIT/{subsec}/{query_format}_new.jsonl'
     
@@ -258,7 +258,7 @@ if __name__ == "__main__":
     # prepare_qrels_gold()
     # prepare_quries_original()
     # prepare_quries_all_history()
-    prepare_quries_same_topic()
+    # prepare_quries_same_topic()
     # prepare_quries_human_rewritten()
     
     
