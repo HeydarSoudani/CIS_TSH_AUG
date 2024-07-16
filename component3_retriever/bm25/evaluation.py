@@ -257,7 +257,7 @@ if __name__ == "__main__":
     parser.add_argument("--result_qrel_base_path", type=str, default="component3_retriever/results")
     parser.add_argument("--dataset_name", type=str, default="INSCIT", choices=["TopiOCQA", "INSCIT", "qrecc"])
     parser.add_argument("--dataset_subsec", type=str, default="test", choices=["train", "dev", "test"])
-    parser.add_argument("--query_format", type=str, default="all_history", choices=['original', 'human_rewritten', 'all_history', 'same_topic'])
+    parser.add_argument("--query_format", type=str, default="same_topic", choices=['original', 'human_rewritten', 'all_history', 'same_topic'])
     parser.add_argument("--bm25_k1", type=float, default="0.9")
     parser.add_argument("--bm25_b", type=float, default="0.4")
     parser.add_argument("--top_k", type=int, default="100")
@@ -270,5 +270,6 @@ if __name__ == "__main__":
     bm25_evaluation(args)
     # evaluation_per_turn(args)
     
+    # new
     # python component3_retriever/bm25/evaluation.py
     
