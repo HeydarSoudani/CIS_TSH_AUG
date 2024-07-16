@@ -122,7 +122,11 @@ HeydarS
 
 
 analysis
-datasets
 corpus
-processed_datasets
-output
+datasets/iKAT_2023
+datasets/TopiOCQA
+datasets/INSCIT
+datasets/TREC_CAsT_2020
+datasets/TREC_CAsT_2022
+
+
