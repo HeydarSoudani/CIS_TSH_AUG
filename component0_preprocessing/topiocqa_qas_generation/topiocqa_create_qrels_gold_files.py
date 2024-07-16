@@ -279,10 +279,14 @@ def convert_gold_to_trec(gold_file, trec_file):
                                         ))
             g.write('\n')
 
+
 if __name__ == "__main__":
     # convert_collection(collection_tsv, collection_json)
     combine_data_train(train, train_gold, train_rewrite, train_new, collection_tsv)
-    combine_data_test(dev, dev_gold, dev_rewrite, dev_new)
     convert_gold_to_trec(train_new, train_trec_gold)
-    convert_gold_to_trec(dev_new, dev_trec_gold)
+    
+    # combine_data_test(dev, dev_gold, dev_rewrite, dev_new)
+    # convert_gold_to_trec(dev_new, dev_trec_gold)
+    
+# python component0_preprocessing/topiocqa_qas_generation/topiocqa_create_qrels_gold_files.py
 

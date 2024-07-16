@@ -15,7 +15,6 @@ import json, os, csv
 from tqdm import tqdm
 from argparse import ArgumentParser
 
-
 csv.field_size_limit(10**6)
 id_col= 0
 text_col= 1
@@ -108,7 +107,6 @@ if __name__ == "__main__":
     # ===== For INSCIT =========
     # inscit_corpus_download_unzip()
     # convert_corpus_to_tsv()
-    
     
     
     # = Step 3) Convert corpus to pyserini file
