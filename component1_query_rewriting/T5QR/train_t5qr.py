@@ -25,7 +25,7 @@ from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
 from transformers import get_linear_schedule_with_warmup, AdamW, T5Tokenizer, T5ForConditionalGeneration
 
-from utils import check_dir_exist_or_build, set_seed, json_dumps_arguments
+from utils import check_dir_exist_or_build, set_seed, json_dumps_arguments, train_dev_split_qrecc
 from dataset import T5RewriterDataset, Collator
 
 
@@ -174,23 +174,23 @@ def validation(model, dev_dataloader):
 def get_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--model_path", type=str, required=True, help="T5 model path.")
-    parser.add_argument("--train_file_path", type=str, required=True, help="Path of the training dialog file.")
-    parser.add_argument("--dev_file_path", type=str, required=True, help="Path of the training dialog file.")
-    parser.add_argument("--log_path", type=str, required=True, help="Path of output tensorboard log.")
-    parser.add_argument("--output_checkpoint_path", type=str, required=True, help="Path of saved models.")
-    parser.add_argument("--output_dir_path", type=str, required=True, help="Dir path of the output info.")
+    parser.add_argument("--model_path", type=str, default="google-t5/t5-base")
+    parser.add_argument("--train_file_path", type=str, default="datasets/QReCC/new_train_qrecc.json")
+    parser.add_argument("--dev_file_path", type=str, default="datasets/QReCC/new_dev_qrecc.json")
+    parser.add_argument("--log_path", type=str, default="component1_query_rewriting/T5QR/outputs/log")
+    parser.add_argument("--output_checkpoint_path", type=str, default="component1_query_rewriting/T5QR/outputs/t5qr_qrecc/checkpoints")
+    parser.add_argument("--output_dir_path", type=str, default="component1_query_rewriting/T5QR/outputs/t5qr_qrecc")
     parser.add_argument("--need_output", action="store_true", help="Whether need to output logs and models (creating the dirs)")
     parser.add_argument("--force_emptying_dir", action="store_true", help="Force to empty the (output) dir.")
 
     parser.add_argument("--log_print_steps", type=float, default=0.01, help="Percent of steps per epoch to print once.")
-    parser.add_argument("--model_save_steps", type=float, required=True, help="Percent of steps to save the model once")
+    parser.add_argument("--model_save_steps", type=float, default="1.0")
 
     parser.add_argument("--seed", type=int, default=7, help="Random seed.")
     parser.add_argument("--use_data_percent", type=float, default=1.0, help="Percent of samples to use. Faciliating the debugging.")
-    parser.add_argument("--num_train_epochs", type=int, required=True, help="Training epochs")
-    parser.add_argument("--train_batch_size", type=int, required=True, help="train batch size, only one GPU")
-    parser.add_argument("--dev_batch_size", type=int, required=True, help="train batch size, only one GPU")
+    parser.add_argument("--num_train_epochs", type=int, default=1, help="Training epochs")
+    parser.add_argument("--train_batch_size", type=int, default=48, help="train batch size, only one GPU")
+    parser.add_argument("--dev_batch_size", type=int, default=48, help="train batch size, only one GPU")
     parser.add_argument("--learning_rate", type=float, default=5e-5, help="learning rate")
     parser.add_argument("--weight_decay", type=float, default=0.0, help="weight_decay")
     parser.add_argument("--adam_epsilon", type=float, default=1e-8, help="adam epsilon")
@@ -198,8 +198,8 @@ def get_args():
     parser.add_argument("--num_warmup_steps", type=int, default=0, help="Warm up steps.")
 
     parser.add_argument("--max_query_length", type=int, default=32, help="Max single query length")
-    parser.add_argument("--max_response_length", type=int, required=True, help="Max response token length")
-    parser.add_argument("--max_seq_length", type=int, required=True, help="Max concatenation length of the session.")
+    parser.add_argument("--max_response_length", type=int, default=100, help="Max response token length")
+    parser.add_argument("--max_seq_length", type=int, default=384, help="Max concatenation length of the session.")
     
 
     args = parser.parse_args()
@@ -217,7 +217,12 @@ def get_args():
 
 
 if __name__ == '__main__':
+    
+    # === Split training data
+    # train_dev_split_qrecc()
+    
     args = get_args()
     set_seed(args)
-
     train_t5qr(args)
+    
+# python component1_query_rewriting/T5QR/train_t5qr.py

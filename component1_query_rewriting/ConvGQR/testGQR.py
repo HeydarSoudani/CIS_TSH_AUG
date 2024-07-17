@@ -94,11 +94,11 @@ def inference_t5qr(args):
 def get_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("--model_checkpoint_path", type=str, default="output/train_topiocqa/Checkpoint/KD-ANCE-prefix-oracle-best-model")
+    parser.add_argument("--model_checkpoint_path", type=str, default="output/train_topiocqa/Checkpoint/KD-ANCE-prefix-answer-best-model")
     parser.add_argument("--test_file_path", type=str, default="datasets/TopiOCQA/dev_new.json")
-    parser.add_argument('--output_file_path', type=str, default="output/train_topiocqa/QR/test_QRIR_oracle_prefix.json")
+    parser.add_argument('--output_file_path', type=str, default="output/train_topiocqa/QR/test_QRIR_answer_prefix.json")
     parser.add_argument("--collate_fn_type", type=str, default="flat_concat_for_test")
-    parser.add_argument("--decode_type", type=str, default="oracle")
+    parser.add_argument("--decode_type", type=str, default="answer")
     parser.add_argument("--model_type", type=str, default="T5")
     parser.add_argument("--use_last_response", type=bool, default=False)
     parser.add_argument("--use_prefix", type=bool, default=True)

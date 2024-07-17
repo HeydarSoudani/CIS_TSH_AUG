@@ -218,5 +218,6 @@ if __name__ == '__main__':
     log_writer = SummaryWriter(log_dir = args.log_dir_path)
     train(args, log_writer)
     log_writer.close()
+
     
-    # python component1_query_rewriting/ConvGQR/trainGQR.py
+# python component1_query_rewriting/ConvGQR/trainGQR.py

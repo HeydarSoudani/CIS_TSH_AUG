@@ -5,8 +5,7 @@
 ### ==============================================================================
 
 
-from IPython import embed
-
+# from IPython import embed
 import os
 import json
 import shutil
@@ -14,6 +13,7 @@ import pickle
 import random
 import numpy as np
 import torch
+from sklearn.model_selection import train_test_split
 
 def check_dir_exist_or_build(dir_list, force_emptying:bool = False):
     for x in dir_list:
@@ -72,3 +72,30 @@ def get_has_qrel_label_sample_ids(qrel_file):
         query = line[0]
         qids.add(query)
     return qids
+
+def train_dev_split_qrecc():
+    with open('datasets/QReCC/qrecc_train.json', 'r') as file:
+        data = json.load(file)
+    
+    if not isinstance(data, list):
+        raise ValueError("The JSON data should be a list")
+    
+    random.shuffle(data)
+    
+    split_index = int(len(data) * 0.9)
+    train_part = data[:split_index]
+    dev_part = data[split_index:]
+    
+    with open('datasets/QReCC/new_train_qrecc.json', 'w') as train_file:
+        # json.dump(train_part, train_file, indent=4)
+        for item in train_part:
+            train_file.write(json.dumps(item) + '\n')
+
+    with open('datasets/QReCC/new_dev_qrecc.json', 'w') as dev_file:
+        # json.dump(dev_part, dev_file, indent=4)
+        for item in dev_part:
+            dev_file.write(json.dumps(item) + '\n')
+    
+
+
+

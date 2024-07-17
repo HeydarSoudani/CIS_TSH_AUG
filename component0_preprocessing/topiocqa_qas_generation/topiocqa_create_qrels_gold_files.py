@@ -179,7 +179,7 @@ def combine_data_train(inputs, inputs_gold, inputs_rewrite, output, collection):
             
             g.write(
                     json.dumps({
-                        "id": str(conv_id) + '-' + str(turn_id),
+                        "id": str(conv_id) + '_' + str(turn_id),
                         "conv_id": conv_id,
                         "turn_id": turn_id,
                         "is_nq": is_nq,
@@ -244,7 +244,7 @@ def combine_data_test(inputs, inputs_gold, inputs_rewrite, output):
 
             g.write(
                     json.dumps({
-                        "id": str(conv_id) + '-' + str(turn_id),
+                        "id": str(conv_id) + '_' + str(turn_id),
                         "conv_id": conv_id,
                         "turn_id": turn_id,
                         "is_nq": is_nq,

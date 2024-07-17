@@ -35,20 +35,60 @@ def set_seed(seed):
 def bm25_retriever(args):
     
     print("Preprocessing files ...")
-    output_res_file = f"{args.result_qrel_base_path}/{args.dataset_name}/{args.dataset_subsec}/bm25_{args.query_format}_results.trec"
+    index_dir = f"{args.index_dir_base_path}/{args.dataset_name}/bm25_index"
+    if args.method == "baseline":
+        output_res_file = f"{args.result_qrel_base_path}/{args.dataset_name}/{args.dataset_subsec}_bm25_{args.query_format}_results.trec"
+    elif args.method == "ConvGQR":
+        output_res_file = f"{args.result_qrel_base_path}/{args.dataset_name}/{args.dataset_subsec}_bm25_{args.method}_results.trec"
+    
     os.makedirs(args.result_qrel_base_path, exist_ok=True)
     os.makedirs(f"{args.result_qrel_base_path}/{args.dataset_name}", exist_ok=True)
-    os.makedirs(f"{args.result_qrel_base_path}/{args.dataset_name}/{args.dataset_subsec}", exist_ok=True)
     
-    index_dir = f"{args.index_dir_base_path}/{args.dataset_name}/bm25_index"
     
     # === Read query file ====================
-    query_path = f"component3_retriever/data/{args.dataset_name}/{args.dataset_subsec}/{args.query_format}.jsonl"
     queries = {}
-    with open (query_path, 'r') as file:
-        for line in file:
-            data = json.loads(line.strip())
-            queries[data['id']] = data
+    if args.method == "baseline":
+        query_path = f"component3_retriever/data/{args.dataset_name}/{args.dataset_subsec}/{args.query_format}.jsonl"
+        
+        with open (query_path, 'r') as file:
+            for line in file:
+                data = json.loads(line.strip())
+                queries[data['id']] = data["query"]
+
+    elif args.method == "ConvGQR":
+        query_oracle_path = "output/train_topiocqa/QR/test_QRIR_oracle_prefix.jsonl"
+        query_expand_path = "output/train_topiocqa/QR/test_QRIR_answer_prefix.jsonl"
+        
+        query_oracle_data = []
+        query_expand_data = []
+        with open(query_oracle_path, 'r') as file:
+            for line in file:
+                query_oracle_data.append(json.loads(line.strip()))
+        with open(query_expand_path, 'r') as file:
+            for line in file:
+                query_expand_data.append(json.loads(line.strip()))
+        
+        for i, oracle_sample in enumerate(query_oracle_data):
+            if args.query_type == "raw":
+                queries[oracle_sample['id']] = oracle_sample["query"]
+            elif args.query_type == "rewrite":
+                queries[oracle_sample['id']] = oracle_sample['rewrite']
+
+            elif args.query_type == "decode":
+                query = oracle_sample['oracle_utt_text']
+                if args.eval_type == "answer":
+                    queries[oracle_sample['sample_id']] = query_expand_data[i]['answer_utt_text']
+                elif args.eval_type == "oracle+answer":
+                    queries[oracle_sample['sample_id']] = query + ' ' + query_expand_data[i]['answer_utt_text']
+
+        # query_list.append(query)
+        # if "sample_id" in oracle_sample:
+        #     qid_list.append(oracle_sample['sample_id'])
+        # else:
+        #     qid_list.append(oracle_sample['id'])
+            
+        
+        
 
     # = Select a subset of queries ===========
     if subset_percentage != 1.0:
@@ -59,7 +99,8 @@ def bm25_retriever(args):
         subset_queries = queries
 
     qid_list = list(subset_queries.keys())
-    query_list = [subset_queries[qid]['query'] for qid in qid_list]
+    query_list = [subset_queries[qid] for qid in qid_list]
+    print(f"Query_id: {qid_list[0]}\nQuery: {query_list[0]}\n")
     
     
     # === Retriever Model: pyserini search ===
@@ -80,11 +121,16 @@ def bm25_retriever(args):
     
 def bm25_evaluation(args):
     print("Evaluating ...")
-    input_file = f"{args.result_qrel_base_path}/{args.dataset_name}/{args.dataset_subsec}/bm25_{args.query_format}_results.trec"
-    with open(input_file, 'r' )as f:
+    
+    if args.method == "baseline":
+        input_file = f"{args.result_qrel_base_path}/{args.dataset_name}/{args.dataset_subsec}_bm25_{args.query_format}_results.trec"
+    elif args.method == "ConvGQR":
+        input_file = f"{args.result_qrel_base_path}/{args.dataset_name}/{args.dataset_subsec}_bm25_{args.method}_results.trec"
+    
+    with open(input_file, 'r') as f:
         run_data = f.readlines()
     
-    gold_qrel_file = f"component3_retriever/data/{args.dataset_name}/{args.dataset_subsec}/qrel_gold.trec"
+    gold_qrel_file = f"processed_datasets/{args.dataset_name}/{args.dataset_subsec}/qrel_gold.trec"
     with open(gold_qrel_file, 'r') as f:
         qrel_data = f.readlines()
     
@@ -255,9 +301,14 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--index_dir_base_path", type=str, default="corpus")
     parser.add_argument("--result_qrel_base_path", type=str, default="component3_retriever/results")
-    parser.add_argument("--dataset_name", type=str, default="INSCIT", choices=["TopiOCQA", "INSCIT", "qrecc"])
-    parser.add_argument("--dataset_subsec", type=str, default="test", choices=["train", "dev", "test"])
-    parser.add_argument("--query_format", type=str, default="same_topic", choices=['original', 'human_rewritten', 'all_history', 'same_topic'])
+    parser.add_argument("--dataset_name", type=str, default="TopiOCQA", choices=["TopiOCQA", "INSCIT", "qrecc"])
+    parser.add_argument("--dataset_subsec", type=str, default="dev", choices=["train", "dev", "test"])
+    parser.add_argument("--method", type=str, default="ConvGQR", choices=["baseline", "ConvGQR"])
+    parser.add_argument("--query_format", type=str, default="human_rewritten", choices=['original', 'human_rewritten', 'all_history', 'same_topic'])
+    
+    parser.add_argument("--query_type", type=str, default="decode", help="for ConvGQR")
+    parser.add_argument("--eval_type", type=str, default="oracle+answer", help="for ConvGQR")
+    
     parser.add_argument("--bm25_k1", type=float, default="0.9")
     parser.add_argument("--bm25_b", type=float, default="0.4")
     parser.add_argument("--top_k", type=int, default="100")
@@ -266,7 +317,7 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    bm25_retriever(args)
+    # bm25_retriever(args)
     bm25_evaluation(args)
     # evaluation_per_turn(args)
     
