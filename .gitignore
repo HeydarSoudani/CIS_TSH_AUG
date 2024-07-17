@@ -123,7 +123,10 @@ HeydarS
 
 analysis
 corpus
-datasets
-output
 processed_datasets
+
+component1_query_rewriting/T5QR/query_rewriter_models
+component1_query_rewriting/ConvGQR/query_rewriter_models
+component3_retriever/input_data
+component3_retriever/output_results
 

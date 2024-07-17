@@ -31,7 +31,7 @@ from dataset import T5RewriterDataset, Collator
 
 def save_model(output_checkpoint_path, model, query_tokenizer, epoch):
     output_dir = oj(output_checkpoint_path, 'epoch-{}'.format(epoch))
-    check_dir_exist_or_build([output_dir])
+    check_dir_exist_or_build([output_dir], True)
     model_to_save = model.module if hasattr(model, 'module') else model
     model_to_save.save_pretrained(output_dir)
     query_tokenizer.save_pretrained(output_dir)
@@ -41,7 +41,8 @@ def save_model(output_checkpoint_path, model, query_tokenizer, epoch):
 
 def train_t5qr(args):
     if args.need_output:
-        check_dir_exist_or_build([args.log_path], args.force_emptying_dir)
+        # check_dir_exist_or_build([args.log_path], args.force_emptying_dir)
+        check_dir_exist_or_build([args.log_path], True)
         log_writer = SummaryWriter(log_dir = args.log_path)
     else:
         log_writer = None
@@ -125,7 +126,7 @@ def train_t5qr(args):
             optimizer.step()
             scheduler.step()
 
-            if args.log_print_steps > 0 and cur_step % args.log_print_steps == 0:
+            if (args.log_print_steps > 0) and (cur_step % args.log_print_steps == 0):
                 logger.info("Epoch = {}, Cur Step = {}, Train Loss = {}".format(
                                 epoch,
                                 cur_step,
@@ -136,12 +137,13 @@ def train_t5qr(args):
             cur_step += 1    # avoid saving the model of the first step.
             
             
-            if args.need_output and cur_step % args.model_save_steps == 0:
+            # if args.need_output and cur_step % args.model_save_steps == 0:
+            if cur_step % args.model_save_steps == 0:
                 save_model(args.output_checkpoint_path, model, tokenizer, epoch)
                 
                 # Validation
                 dev_loss = validation(model, dev_dataloader)
-                log_writer.add_scalar("dev_t5_qr_loss", dev_loss, cur_step)
+                # log_writer.add_scalar("dev_t5_qr_loss", dev_loss, cur_step)
                 dev_loss = dev_loss.item()
                 logger.info("Epoch-{}-Step-{}, Dev loss: {}.".format(epoch, cur_step, dev_loss))
                 if dev_loss < min_dev_loss:
@@ -178,17 +180,17 @@ def get_args():
     parser.add_argument("--train_file_path", type=str, default="processed_datasets/QReCC/new_train_qrecc.json")
     parser.add_argument("--dev_file_path", type=str, default="processed_datasets/QReCC/new_dev_qrecc.json")
     parser.add_argument("--log_path", type=str, default="component1_query_rewriting/T5QR/outputs/log")
-    parser.add_argument("--output_checkpoint_path", type=str, default="component1_query_rewriting/T5QR/outputs/t5qr_qrecc/checkpoints")
-    parser.add_argument("--output_dir_path", type=str, default="component1_query_rewriting/T5QR/outputs/t5qr_qrecc")
+    parser.add_argument("--output_checkpoint_path", type=str, default="component1_query_rewriting/T5QR/outputs/checkpoints")
+    parser.add_argument("--output_dir_path", type=str, default="component1_query_rewriting/T5QR/outputs")
     parser.add_argument("--need_output", action="store_true", help="Whether need to output logs and models (creating the dirs)")
     parser.add_argument("--force_emptying_dir", action="store_true", help="Force to empty the (output) dir.")
 
-    parser.add_argument("--log_print_steps", type=float, default=0.01, help="Percent of steps per epoch to print once.")
-    parser.add_argument("--model_save_steps", type=float, default="1.0")
+    parser.add_argument("--log_print_steps", type=int, default=250, help="Percent of steps per epoch to print once.")
+    parser.add_argument("--model_save_steps", type=int, default=500)
 
     parser.add_argument("--seed", type=int, default=7, help="Random seed.")
     parser.add_argument("--use_data_percent", type=float, default=1.0, help="Percent of samples to use. Faciliating the debugging.")
-    parser.add_argument("--num_train_epochs", type=int, default=1, help="Training epochs")
+    parser.add_argument("--num_train_epochs", type=int, default=20, help="Training epochs")
     parser.add_argument("--train_batch_size", type=int, default=48, help="train batch size, only one GPU")
     parser.add_argument("--dev_batch_size", type=int, default=48, help="train batch size, only one GPU")
     parser.add_argument("--learning_rate", type=float, default=5e-5, help="learning rate")
@@ -209,9 +211,9 @@ def get_args():
     logger.info("---------------------The arguments are:---------------------")
     logger.info(args)
     
-    if args.need_output:
-        check_dir_exist_or_build([args.output_dir_path], force_emptying=args.force_emptying_dir)
-        json_dumps_arguments(oj(args.output_dir_path, "parameters.txt"), args)
+    # if args.need_output:
+    check_dir_exist_or_build([args.output_dir_path], force_emptying=True)
+    json_dumps_arguments(oj(args.output_dir_path, "parameters.txt"), args)
         
     return args
 
