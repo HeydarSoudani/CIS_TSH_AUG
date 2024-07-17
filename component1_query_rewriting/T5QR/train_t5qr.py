@@ -175,8 +175,8 @@ def get_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--model_path", type=str, default="google-t5/t5-base")
-    parser.add_argument("--train_file_path", type=str, default="datasets/QReCC/new_train_qrecc.json")
-    parser.add_argument("--dev_file_path", type=str, default="datasets/QReCC/new_dev_qrecc.json")
+    parser.add_argument("--train_file_path", type=str, default="processed_datasets/QReCC/new_train_qrecc.json")
+    parser.add_argument("--dev_file_path", type=str, default="processed_datasets/QReCC/new_dev_qrecc.json")
     parser.add_argument("--log_path", type=str, default="component1_query_rewriting/T5QR/outputs/log")
     parser.add_argument("--output_checkpoint_path", type=str, default="component1_query_rewriting/T5QR/outputs/t5qr_qrecc/checkpoints")
     parser.add_argument("--output_dir_path", type=str, default="component1_query_rewriting/T5QR/outputs/t5qr_qrecc")
@@ -217,10 +217,6 @@ def get_args():
 
 
 if __name__ == '__main__':
-    
-    # === Split training data
-    # train_dev_split_qrecc()
-    
     args = get_args()
     set_seed(args)
     train_t5qr(args)
