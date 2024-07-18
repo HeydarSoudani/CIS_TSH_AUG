@@ -36,26 +36,19 @@ def bm25_retriever(args):
     
     print("Preprocessing files ...")
     index_dir = f"{args.index_dir_base_path}/{args.dataset_name}/bm25_index"
-    if args.method == "baseline":
-        output_res_file = f"{args.result_qrel_base_path}/{args.dataset_name}/{args.dataset_subsec}_bm25_{args.query_format}_results.trec"
-    elif args.method == "ConvGQR":
-        output_res_file = f"{args.result_qrel_base_path}/{args.dataset_name}/{args.dataset_subsec}_bm25_{args.method}_results.trec"
-    
-    os.makedirs(args.result_qrel_base_path, exist_ok=True)
-    os.makedirs(f"{args.result_qrel_base_path}/{args.dataset_name}", exist_ok=True)
-    
     
     # === Read query file ====================
     queries = {}
-    if args.method == "baseline":
-        query_path = f"component3_retriever/data/{args.dataset_name}/{args.dataset_subsec}/{args.query_format}.jsonl"
+    if args.query_format == "t5_rewritten":
+        args.query_file = f"component3_retriever/input_data/{args.dataset_name}/T5QR/t5_rewrite.json"
+        with open(args.query_file, 'r') as file:
+            data = json.load(file)
         
-        with open (query_path, 'r') as file:
-            for line in file:
-                data = json.loads(line.strip())
-                queries[data['id']] = data["query"]
-
-    elif args.method == "ConvGQR":
+        for item in data:
+            query = item["t5_rewrite"]
+            queries[item['sample_id']] = query
+    
+    elif args.query_format == "ConvGQR":
         query_oracle_path = "output/train_topiocqa/QR/test_QRIR_oracle_prefix.jsonl"
         query_expand_path = "output/train_topiocqa/QR/test_QRIR_answer_prefix.jsonl"
         
@@ -80,12 +73,21 @@ def bm25_retriever(args):
                     queries[oracle_sample['sample_id']] = query_expand_data[i]['answer_utt_text']
                 elif args.eval_type == "oracle+answer":
                     queries[oracle_sample['sample_id']] = query + ' ' + query_expand_data[i]['answer_utt_text']
+    
+    else:
+        args.query_file = f"component3_retriever/data/{args.dataset_name}/{args.dataset_subsec}/{args.query_format}.jsonl"
+        
+        with open (args.query_file, 'r') as file:
+            for line in file:
+                data = json.loads(line.strip())
+                queries[data['id']] = data["query"]
 
         # query_list.append(query)
         # if "sample_id" in oracle_sample:
         #     qid_list.append(oracle_sample['sample_id'])
         # else:
         #     qid_list.append(oracle_sample['id'])
+    
     
     # = Select a subset of queries ===========
     if subset_percentage != 1.0:
@@ -107,6 +109,9 @@ def bm25_retriever(args):
     hits = searcher.batch_search(query_list, qid_list, k=args.top_k, threads=20)
 
     total = 0
+    os.makedirs(args.results_base_path, exist_ok=True)
+    os.makedirs(f"{args.results_base_path}/{args.dataset_name}", exist_ok=True)
+    output_res_file = f"{args.results_base_path}/{args.dataset_name}/{args.query_format}_bm25_results.trec"
     with open(output_res_file, "w") as f:
         for qid in qid_list:
             for i, item in enumerate(hits[qid]):
@@ -119,15 +124,11 @@ def bm25_retriever(args):
 def bm25_evaluation(args):
     print("Evaluating ...")
     
-    if args.method == "baseline":
-        input_file = f"{args.result_qrel_base_path}/{args.dataset_name}/{args.dataset_subsec}_bm25_{args.query_format}_results.trec"
-    elif args.method == "ConvGQR":
-        input_file = f"{args.result_qrel_base_path}/{args.dataset_name}/{args.dataset_subsec}_bm25_{args.method}_results.trec"
-    
+    input_file = f"{args.results_base_path}/{args.dataset_name}/{args.query_format}_bm25_results.trec"
     with open(input_file, 'r') as f:
         run_data = f.readlines()
     
-    gold_qrel_file = f"processed_datasets/{args.dataset_name}/{args.dataset_subsec}/qrel_gold.trec"
+    gold_qrel_file = f"processed_datasets/{args.dataset_name}/{args.dataset_subsec}_gold.trec"
     with open(gold_qrel_file, 'r') as f:
         qrel_data = f.readlines()
     
@@ -297,11 +298,10 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
     parser.add_argument("--index_dir_base_path", type=str, default="corpus")
-    parser.add_argument("--result_qrel_base_path", type=str, default="component3_retriever/results")
-    parser.add_argument("--dataset_name", type=str, default="TopiOCQA", choices=["TopiOCQA", "INSCIT", "qrecc"])
-    parser.add_argument("--dataset_subsec", type=str, default="dev", choices=["train", "dev", "test"])
-    parser.add_argument("--method", type=str, default="ConvGQR", choices=["baseline", "ConvGQR"])
-    parser.add_argument("--query_format", type=str, default="human_rewritten", choices=['original', 'human_rewritten', 'all_history', 'same_topic'])
+    parser.add_argument("--results_base_path", type=str, default="component3_retriever/output_results")
+    parser.add_argument("--dataset_name", type=str, default="INSCIT", choices=["TopiOCQA", "INSCIT"])
+    parser.add_argument("--dataset_subsec", type=str, default="test", choices=["train", "dev", "test"])
+    parser.add_argument("--query_format", type=str, default="t5_rewritten", choices=['original', 'human_rewritten', 'all_history', 'same_topic', 't5_rewritten', 'ConvGQR_rewritten'])
     
     parser.add_argument("--query_type", type=str, default="decode", help="for ConvGQR")
     parser.add_argument("--eval_type", type=str, default="oracle+answer", help="for ConvGQR")
@@ -316,8 +316,8 @@ if __name__ == "__main__":
     
     bm25_retriever(args)
     bm25_evaluation(args)
-    evaluation_per_turn(args)
+    # evaluation_per_turn(args)
     
     
-    # python component3_retriever/bm25/evaluation.py
+    # python component3_retriever/bm25/topiocqa_inscit_baseline_evaluation.py
     

@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 
 
 import torch
@@ -28,18 +29,29 @@ def bm25_retriever(args):
     
     # === Read queries =======================
     queries = {}
-    with open (args.query_file, 'r') as file:
-        for line in file:
-            data = json.loads(line.strip())
-            
-            if args.query_format == "original":
-                query = data["cur_utt_text"]
-            elif args.query_format == "human_rewritten":
-                query = data["oracle_utt_text"]
-            elif args.query_format == "all_history":
-                query = ' '.join(data["ctx_utts_text"]) + " " + data["cur_utt_text"]
-            
-            queries[data['sample_id']] = query
+    if args.query_format == "t5_rewritten":
+        args.query_file = "component3_retriever/input_data/QReCC/T5QR/t5_rewrite.json"
+        with open(args.query_file, 'r') as file:
+            data = json.load(file)
+        
+        for item in data:
+            query = item["t5_rewrite"]
+            queries[item['sample_id']] = query
+        
+    else:
+        args.query_file = "processed_datasets/QReCC/new_test.json" # test.json for all_history
+        with open (args.query_file, 'r') as file:
+            for line in file:
+                data = json.loads(line.strip())
+                
+                if args.query_format == "original":
+                    query = data["cur_utt_text"]
+                elif args.query_format == "human_rewritten":
+                    query = data["oracle_utt_text"]
+                elif args.query_format == "all_history":
+                    query = ' '.join(data["ctx_utts_text"]) + " " + data["cur_utt_text"]
+                
+                queries[data['sample_id']] = query
     
     # = Select a subset of queries ===========
     if subset_percentage != 1.0:
@@ -151,9 +163,9 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
     parser.add_argument("--index_dir", type=str, default="corpus/QReCC/bm25_index")
-    parser.add_argument("--query_file", type=str, default="processed_datasets/QReCC/new_test.json")
+    # parser.add_argument("--query_file", type=str, default="processed_datasets/QReCC/test.json")
     parser.add_argument("--results_base_path", type=str, default="component3_retriever/output_results/QReCC")
-    parser.add_argument("--query_format", type=str, default="original", choices=['original', 'human_rewritten', 'all_history', 'same_topic'])
+    parser.add_argument("--query_format", type=str, default="original", choices=['original', 'human_rewritten', 'all_history', 'same_topic', 't5_rewritten'])
     parser.add_argument("--bm25_k1", type=float, default="0.9")
     parser.add_argument("--bm25_b", type=float, default="0.4")
     parser.add_argument("--top_k", type=int, default="100")
@@ -162,7 +174,7 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    bm25_retriever(args)
-    # bm25_evaluation(args)
+    # bm25_retriever(args)
+    bm25_evaluation(args)
     
-    # python component3_retriever/bm25/qrecc_baseline_evaluation.py
+    # python component3_retriever/bm25/qrecc_baseline_t5_evaluation.py

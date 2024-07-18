@@ -73,7 +73,47 @@ def inscit_query_files_download():
 
 def test_file_to_qrecc_format():
     input_file = "corpus/INSCIT/test.json"
-    output_file = "corpus/INSCIT/test_qrecc_format.json"
+    output_file = "processed_datasets/INSCIT/test_qrecc_format.json"
+    
+    # === Loading t2id =========================
+    print("Loading t2id file ...")
+    with open("corpus/INSCIT/title2ids.json", 'r') as file:
+        title2ids_data = json.load(file)
+    
+    def get_value_with_exception_handling(key):
+        try:
+            return title2ids_data[key]
+        except KeyError:
+            print(f"Key {key} not found")
+            return 0
+    
+    # === Converting ===========================
+    print("Converting ...")
+    with open(input_file, 'r') as file:
+        row_data = json.load(file)
+    
+    with open(output_file, "w") as of:
+        for conv_idx, (conv_id, conv_sample) in enumerate(row_data.items()):
+            turns = conv_sample['turns']
+            for turn_idx, turn in enumerate(turns):
+                sample_id = f"{conv_idx+1}_{turn_idx+1}"
+                query = turn["context"][-1]
+                answer = turn["labels"][0]["response"]
+                p_titles = [e["passage_id"] for e in turn["labels"][0]["evidence"]]
+                pids = [get_value_with_exception_handling(title) for title in p_titles] 
+                history_query = turn["context"][:-1:2]
+                history_answer = turn["context"][1:-1:2]
+                
+                item = {
+                    "sample_id": sample_id,
+                    "cur_utt_text": query,
+                    "oracle_utt_text": "",
+                    "cur_response_text": answer,
+                    "ctx_utts_text": history_query,
+                    "ctx_resps_text": history_answer,
+                    "pos_docs_pids": pids
+                }
+                of.write(json.dumps(item) + '\n')
 
 
 if __name__ == "__main__":
