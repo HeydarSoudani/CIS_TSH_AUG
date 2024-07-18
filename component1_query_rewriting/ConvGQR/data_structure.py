@@ -3,7 +3,7 @@
 ### ==============================================================================
 
 
-from IPython import embed
+# from IPython import embed
 import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -145,6 +145,7 @@ class T5RewriterIRDataset_qrecc(Dataset):
         with open(filename, encoding="utf-8") as f:
             data = f.readlines()
         n = len(data)
+        print(n)
         n = int(args.use_data_percent * n)  
         # randomly sample n samples for deugging
         if n < len(data):
@@ -504,15 +505,22 @@ class T5RewriterIRDataset_topiocqa(Dataset):
             record = json.loads(line)
             flat_concat = []
 
-            ctx_utts_text = []
-            cur_utt_text = record['query']
-            history_query = record['history_query']
-            history_answer = record['history_answer']
-            for i in range(len(history_query)):
-                ctx_utts_text.append(history_query[i])
-                ctx_utts_text.append(history_answer[i])
-            cur_response_text = record["answer"]
-            oracle_utt_text = record["rewrite"]
+            # === For TopiOCQA
+            # ctx_utts_text = []
+            # cur_utt_text = record['query']
+            # history_query = record['history_query']
+            # history_answer = record['history_answer']
+            # for i in range(len(history_query)):
+            #     ctx_utts_text.append(history_query[i])
+            #     ctx_utts_text.append(history_answer[i])
+            # cur_response_text = record["answer"]
+            # oracle_utt_text = record["rewrite"]
+
+            # === For INSCIT
+            cur_utt_text = record['cur_utt_text']
+            ctx_utts_text = record['ctx_utts_text']
+            cur_response_text = record["cur_response_text"]
+            oracle_utt_text = record["oracle_utt_text"]
 
             #if "pos_docs" in record and len(record["pos_docs"]) != 0:
             #    pos_docs_text = record["pos_docs"]

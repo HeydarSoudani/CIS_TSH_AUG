@@ -303,11 +303,11 @@ if __name__ == "__main__":
     train_trec_gold = "processed_datasets/TopiOCQA/train_gold.trec"
     dev_trec_gold = "processed_datasets/TopiOCQA/dev_gold.trec"
     
-    # convert_collection(collection_tsv, collection_json)
-    # combine_data_train(train, train_gold, train_rewrite, train_new, collection_tsv)
-    # convert_gold_to_trec(train_new, train_trec_gold)
-    # combine_data_test(dev, dev_gold, dev_rewrite, dev_new)
-    # convert_gold_to_trec(dev_new, dev_trec_gold)
+    convert_collection(collection_tsv, collection_json)
+    combine_data_train(train, train_gold, train_rewrite, train_new, collection_tsv)
+    convert_gold_to_trec(train_new, train_trec_gold)
+    combine_data_test(dev, dev_gold, dev_rewrite, dev_new)
+    convert_gold_to_trec(dev_new, dev_trec_gold)
     
     dev_qrecc_format = "processed_datasets/TopiOCQA/dev_qrecc_format.json"
     test_file_to_qrecc_format(dev_new, dev_qrecc_format)

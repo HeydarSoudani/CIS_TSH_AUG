@@ -48,9 +48,9 @@ def bm25_retriever(args):
             query = item["t5_rewrite"]
             queries[item['sample_id']] = query
     
-    elif args.query_format == "ConvGQR":
-        query_oracle_path = "output/train_topiocqa/QR/test_QRIR_oracle_prefix.jsonl"
-        query_expand_path = "output/train_topiocqa/QR/test_QRIR_answer_prefix.jsonl"
+    elif args.query_format == "ConvGQR_rewritten":
+        query_oracle_path = "component3_retriever/input_data/INSCIT/ConvGQR/convgqr_rewrite_oracle_prefix.json"
+        query_expand_path = "component3_retriever/input_data/INSCIT/ConvGQR/convgqr_rewrite_answer_prefix.json"
         
         query_oracle_data = []
         query_expand_data = []
@@ -301,7 +301,7 @@ if __name__ == "__main__":
     parser.add_argument("--results_base_path", type=str, default="component3_retriever/output_results")
     parser.add_argument("--dataset_name", type=str, default="INSCIT", choices=["TopiOCQA", "INSCIT"])
     parser.add_argument("--dataset_subsec", type=str, default="test", choices=["train", "dev", "test"])
-    parser.add_argument("--query_format", type=str, default="t5_rewritten", choices=['original', 'human_rewritten', 'all_history', 'same_topic', 't5_rewritten', 'ConvGQR_rewritten'])
+    parser.add_argument("--query_format", type=str, default="ConvGQR_rewritten", choices=['original', 'human_rewritten', 'all_history', 'same_topic', 't5_rewritten', 'ConvGQR_rewritten'])
     
     parser.add_argument("--query_type", type=str, default="decode", help="for ConvGQR")
     parser.add_argument("--eval_type", type=str, default="oracle+answer", help="for ConvGQR")

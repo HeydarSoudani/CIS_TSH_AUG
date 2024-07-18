@@ -99,8 +99,8 @@ def get_args():
     
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_checkpoint_path", type=str, default="component1_query_rewriting/T5QR/query_rewriter_models/QReCC_checkpoints/epoch-4")
-    parser.add_argument("--test_file_path", type=str, default="processed_datasets/INSCIT/test_qrecc_format.json")
-    parser.add_argument('--output_file_path', type=str, default="component3_retriever/input_data/INSCIT/T5QR/t5_rewrite.json")
+    parser.add_argument("--test_file_path", type=str, default="processed_datasets/INSCIT/dev_qrecc_format.json")
+    parser.add_argument('--output_file_path', type=str, default="component3_retriever/input_data/INSCIT/T5QR/dev_t5_rewrite.json")
     parser.add_argument('--local_rank', type=int, default=1, metavar='N', help='Local process rank.')  # you need this argument in your scripts for DDP to work
     parser.add_argument("--per_gpu_eval_batch_size", type=int, default=64)
     parser.add_argument("--use_data_percent", type=float, default=1.0)

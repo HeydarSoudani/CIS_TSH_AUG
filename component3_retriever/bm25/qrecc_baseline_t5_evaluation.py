@@ -38,6 +38,32 @@ def bm25_retriever(args):
             query = item["t5_rewrite"]
             queries[item['sample_id']] = query
         
+    elif args.query_format == "ConvGQR_rewritten":
+        query_oracle_path = "component3_retriever/input_data/QReCC/ConvGQR/convgqr_rewrite_oracle_prefix.json"
+        query_expand_path = "component3_retriever/input_data/QReCC/ConvGQR/convgqr_rewrite_answer_prefix.json"
+        
+        query_oracle_data = []
+        query_expand_data = []
+        with open(query_oracle_path, 'r') as file:
+            for line in file:
+                query_oracle_data.append(json.loads(line.strip()))
+        with open(query_expand_path, 'r') as file:
+            for line in file:
+                query_expand_data.append(json.loads(line.strip()))
+        
+        for i, oracle_sample in enumerate(query_oracle_data):
+            if args.query_type == "raw":
+                queries[oracle_sample['id']] = oracle_sample["query"]
+            elif args.query_type == "rewrite":
+                queries[oracle_sample['id']] = oracle_sample['rewrite']
+
+            elif args.query_type == "decode":
+                query = oracle_sample['oracle_utt_text']
+                if args.eval_type == "answer":
+                    queries[oracle_sample['sample_id']] = query_expand_data[i]['answer_utt_text']
+                elif args.eval_type == "oracle+answer":
+                    queries[oracle_sample['sample_id']] = query + ' ' + query_expand_data[i]['answer_utt_text']    
+    
     else:
         args.query_file = "processed_datasets/QReCC/new_test.json" # test.json for all_history
         with open (args.query_file, 'r') as file:
@@ -165,7 +191,11 @@ if __name__ == "__main__":
     parser.add_argument("--index_dir", type=str, default="corpus/QReCC/bm25_index")
     # parser.add_argument("--query_file", type=str, default="processed_datasets/QReCC/test.json")
     parser.add_argument("--results_base_path", type=str, default="component3_retriever/output_results/QReCC")
-    parser.add_argument("--query_format", type=str, default="original", choices=['original', 'human_rewritten', 'all_history', 'same_topic', 't5_rewritten'])
+    parser.add_argument("--query_format", type=str, default="ConvGQR_rewritten", choices=['original', 'human_rewritten', 'all_history', 'same_topic', 't5_rewritten', 'ConvGQR_rewritten'])
+    
+    parser.add_argument("--query_type", type=str, default="decode", help="for ConvGQR")
+    parser.add_argument("--eval_type", type=str, default="oracle+answer", help="for ConvGQR")
+    
     parser.add_argument("--bm25_k1", type=float, default="0.9")
     parser.add_argument("--bm25_b", type=float, default="0.4")
     parser.add_argument("--top_k", type=int, default="100")
@@ -173,8 +203,7 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default="1")
     
     args = parser.parse_args()
-    
-    # bm25_retriever(args)
+    bm25_retriever(args)
     bm25_evaluation(args)
     
     # python component3_retriever/bm25/qrecc_baseline_t5_evaluation.py
