@@ -471,6 +471,24 @@ def train_dev_split_qrecc(reference_file, train_file, dev_file):
         for x in dev_data:
             fd.write(x)
 
+def test_file_add_res_context(input_file, output_file):    
+    with open(input_file, 'r') as file, open(output_file, "w") as of:
+        for line in file:
+            x = json.loads(line.strip())
+            # print(x["sample_id"])
+            item = {
+                "sample_id": x["sample_id"],
+                "source": x["source"],
+                "cur_utt_text": x["cur_utt_text"],
+                "oracle_utt_text": x["oracle_utt_text"],
+                "cur_response_text": x["cur_response_text"],
+                "ctx_utts_text": x["ctx_utts_text"][::2],
+                "ctx_resps_text": x["ctx_utts_text"][1::2],
+                "pos_docs_pids": x["pos_docs_pids"]
+            }
+            # of.write(item)
+            of.write(json.dumps(item) + '\n')
+    
 
 if __name__ == "__main__":
     
@@ -502,10 +520,15 @@ if __name__ == "__main__":
     # train_outputfile_with_doc = "processed_datasets/QReCC/train_with_doc.json"
     # extract_doc_content_of_random_negs_for_train_file(qrecc_collection_path, train_inputfile, train_outputfile_with_doc)
     
-    train_outputfile_with_doc = "processed_datasets/QReCC/train_with_doc.json"
-    train_file = "processed_datasets/QReCC/new_train_with_doc.json"
-    dev_file = "processed_datasets/QReCC/new_dev_with_doc.json"
-    train_dev_split_qrecc(train_outputfile_with_doc, train_file, dev_file)
+    # train_outputfile_with_doc = "processed_datasets/QReCC/train_with_doc.json"
+    # train_file = "processed_datasets/QReCC/new_train_with_doc.json"
+    # dev_file = "processed_datasets/QReCC/new_dev_with_doc.json"
+    # train_dev_split_qrecc(train_outputfile_with_doc, train_file, dev_file)
+    
+    # = Test file
+    input_file = "processed_datasets/QReCC/test.json"
+    output_file = "processed_datasets/QReCC/new_test.json"
+    test_file_add_res_context(input_file, output_file)
     
     
-    # python component0_preprocessing/qrecc_qas_generation/corpus_preprocessing.py
+    # python component0_preprocessing/qrecc_files_preprocessing/1_corpus_preprocessing.py

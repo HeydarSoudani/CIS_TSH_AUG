@@ -3,7 +3,7 @@ import os
 import json
 from tqdm import tqdm
 import pickle
-from IPython import embed
+# from IPython import embed
 import csv
 import random
 from sklearn.model_selection import train_test_split
@@ -259,6 +259,22 @@ def convert_gold_to_trec(gold_file, trec_file):
                                         ))
             g.write('\n')
 
+def test_file_to_qrecc_format(input_file, output_file):
+    with open(input_file, 'r') as file, open(output_file, "w") as of:
+        for line in file:
+            x = json.loads(line.strip())
+            
+            item = {
+                "sample_id": x["id"],
+                "cur_utt_text": x["query"],
+                "oracle_utt_text": x["rewrite"],
+                "cur_response_text": x["answer"],
+                "ctx_utts_text": x["history_query"],
+                "ctx_resps_text": x["history_answer"],
+                "pos_docs_pids": x["pos_docs_id"]
+            }
+            of.write(json.dumps(item) + '\n')
+            
 
 if __name__ == "__main__":
     
@@ -287,11 +303,14 @@ if __name__ == "__main__":
     train_trec_gold = "processed_datasets/TopiOCQA/train_gold.trec"
     dev_trec_gold = "processed_datasets/TopiOCQA/dev_gold.trec"
     
-    convert_collection(collection_tsv, collection_json)
-    combine_data_train(train, train_gold, train_rewrite, train_new, collection_tsv)
-    convert_gold_to_trec(train_new, train_trec_gold)
-    combine_data_test(dev, dev_gold, dev_rewrite, dev_new)
-    convert_gold_to_trec(dev_new, dev_trec_gold)
+    # convert_collection(collection_tsv, collection_json)
+    # combine_data_train(train, train_gold, train_rewrite, train_new, collection_tsv)
+    # convert_gold_to_trec(train_new, train_trec_gold)
+    # combine_data_test(dev, dev_gold, dev_rewrite, dev_new)
+    # convert_gold_to_trec(dev_new, dev_trec_gold)
     
-# python component0_preprocessing/topiocqa_qas_generation/topiocqa_create_qrels_gold_files.py
+    dev_qrecc_format = "processed_datasets/TopiOCQA/dev_qrecc_format.json"
+    test_file_to_qrecc_format(dev_new, dev_qrecc_format)
+    
+# python component0_preprocessing/topiocqa_files_preprocessing/1_corpus_preprocessing.py
 

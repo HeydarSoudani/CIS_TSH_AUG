@@ -58,9 +58,6 @@ class Collator:
                 "bt_ctx_resps_text": bt_ctx_resps_text,
                 "bt_oracle_utt_text": bt_tgt_seq}
 
-        
-        
-
 class T5RewriterDataset(Dataset):
     def __init__(self, args, filename):
         self.examples = []

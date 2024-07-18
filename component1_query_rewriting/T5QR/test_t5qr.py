@@ -24,7 +24,6 @@ from torch.utils.data import DataLoader
 from transformers import T5Tokenizer, T5ForConditionalGeneration
 from utils import set_seed
 from dataset import T5RewriterDataset, Collator
-from IPython import embed
 
 def inference_t5qr(args):
     model = T5ForConditionalGeneration.from_pretrained(args.model_checkpoint_path)
@@ -35,8 +34,7 @@ def inference_t5qr(args):
     model.to(args.device)
     if args.n_gpu > 1:
         model = DDP(model, device_ids = [args.local_rank], output_device=args.local_rank, find_unused_parameters=True)
-
-    dist.barrier()
+    # dist.barrier()
 
     test_dataset = T5RewriterDataset(args, args.test_file_path)
     collate_kwargs = {"tokenizer": args.tokenizer, 
@@ -45,9 +43,9 @@ def inference_t5qr(args):
                       "collate_type": "test"}
     collate_fn = Collator(**collate_kwargs)
     args.batch_size = args.per_gpu_eval_batch_size * max(1, args.n_gpu)
-    ddp_sampler = DistributedSampler(test_dataset, shuffle=False)
+    # ddp_sampler = DistributedSampler(test_dataset, shuffle=False)
     test_dataloader = DataLoader(test_dataset, 
-                                  sampler=ddp_sampler,
+                                #   sampler=ddp_sampler,
                                   batch_size=args.batch_size, 
                                   collate_fn=collate_fn)
     
@@ -85,34 +83,41 @@ def inference_t5qr(args):
         f.write(json.dumps(results, indent=4))
 
     logger.info("Inference finsh!")
-    
 
 def get_args():
+    
+    # === QReCC
+    # test_file_path: processed_datasets/QReCC/new_test.json
+    # output_file_path: component3_retriever/input_data/QReCC/T5QR/t5_rewrite.json
+    # === TopiOCQA
+    # test_file_path: processed_datasets/TopiOCQA/dev_qrecc_format.json
+    # output_file_path: component3_retriever/input_data/TopiOCQA/T5QR/t5_rewrite.json
+    # === INSCIT
+    # test_file_path:
+    # output_file_path:
+    
+    
     parser = argparse.ArgumentParser()
+    parser.add_argument("--model_checkpoint_path", type=str, default="component1_query_rewriting/T5QR/query_rewriter_models/QReCC_checkpoints/epoch-4")
+    parser.add_argument("--test_file_path", type=str, default="processed_datasets/TopiOCQA/dev_qrecc_format.json")
+    parser.add_argument('--output_file_path', type=str, default="component3_retriever/input_data/TopiOCQA/T5QR/t5_rewrite.json")
+    parser.add_argument('--local_rank', type=int, default=1, metavar='N', help='Local process rank.')  # you need this argument in your scripts for DDP to work
+    parser.add_argument("--per_gpu_eval_batch_size", type=int, default=64)
+    parser.add_argument("--use_data_percent", type=float, default=1.0)
+    parser.add_argument("--max_query_length", type=int, default=32, help="Max single query length")
+    parser.add_argument("--max_response_length", type=int, default=128, help="Max response token length")
+    parser.add_argument("--max_seq_length", type=int, default=256, help="Max concatenation length of the session.")
     parser.add_argument("--n_gpu", type=int, default=1)
     parser.add_argument("--seed", type=int, default=42)
-
-    parser.add_argument("--model_checkpoint_path", type=str, required=True)
-    parser.add_argument("--test_file_path", type=str, required=True)
-    parser.add_argument('--output_file_path', type=str, required=True)
-    parser.add_argument('--local_rank', type=int, default=-1, metavar='N', help='Local process rank.')  # you need this argument in your scripts for DDP to work
-
-    parser.add_argument("--per_gpu_eval_batch_size", type=int, required=True)
-    parser.add_argument("--use_data_percent", type=float, default=1.0)
-    
-    parser.add_argument("--max_query_length", type=int, default=32, help="Max single query length")
-    parser.add_argument("--max_response_length", type=int, required=True, help="Max response token length")
-    parser.add_argument("--max_seq_length", type=int, required=True, help="Max concatenation length of the session.")
     
     args = parser.parse_args()
-    local_rank = args.local_rank
-    args.local_rank = local_rank
 
     # pytorch parallel gpu
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu", args.local_rank)
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu", args.local_rank)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     args.device = device
-    dist.init_process_group(backend='nccl', init_method='env://')
-    torch.cuda.set_device(args.local_rank)
+    # dist.init_process_group(backend='nccl', init_method='env://')
+    # torch.cuda.set_device(args.local_rank)
 
     return args
 
@@ -124,3 +129,5 @@ if __name__ == '__main__':
     logger.info(args)
 
     inference_t5qr(args)
+
+# python component1_query_rewriting/T5QR/test_t5qr.py

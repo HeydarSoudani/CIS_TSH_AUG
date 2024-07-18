@@ -13,4 +13,4 @@ module load Python/3.10.4-GCCcore-11.3.0
 module load IPython/8.5.0-GCCcore-11.3.0
 module load Java/11.0.2
 
-python -m pyserini.index -collection JsonCollection -generator DefaultLuceneDocumentGenerator -threads 20 -input "corpus/QReCC" -index "corpus/QReCC/bm25_index_2" -storePositions -storeDocvectors -storeRaw
+python -m pyserini.index -collection JsonCollection -generator DefaultLuceneDocumentGenerator -threads 20 -input "corpus/QReCC" -index "corpus/QReCC/bm25_index" -storePositions -storeDocvectors -storeRaw

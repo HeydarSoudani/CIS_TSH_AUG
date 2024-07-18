@@ -3,8 +3,9 @@
 ### ==================================================================================
 
 import gdown
-import zipfile
 import pathlib
+import zipfile
+import requests
 import json, os, csv
 
 csv.field_size_limit(10**8)
@@ -57,8 +58,30 @@ def inscit_convert_corpus_to_tsv():
         if os.path.isfile(dir_or_file):
             process_file(dir_or_file, output_file)
 
+def inscit_query_files_download():
+
+    dataset_subsec = "train"
+    file_url = f"https://raw.githubusercontent.com/ellenmellon/INSCIT/main/data/{dataset_subsec}.json"
+    save_path = f"corpus/INSCIT/{dataset_subsec}.json"
+    response = requests.get(file_url)
+    if response.status_code == 200:
+        with open(save_path, 'wb') as file:
+            file.write(response.content)
+        print(f"File downloaded and saved as {save_path}")
+    else:
+        print(f"Failed to download file. Status code: {response.status_code}")
+
+def test_file_to_qrecc_format():
+    input_file = "corpus/INSCIT/test.json"
+    output_file = "corpus/INSCIT/test_qrecc_format.json"
+
 
 if __name__ == "__main__":
     # ===== Step 1) download files ==============
-    inscit_corpus_download_unzip()
-    inscit_convert_corpus_to_tsv()
+    # inscit_corpus_download_unzip()
+    # inscit_convert_corpus_to_tsv()
+    # inscit_query_files_download()
+    test_file_to_qrecc_format()
+    
+# python component0_preprocessing/inscit_files_preprocessing/1_corpus_preprocessing.py
+

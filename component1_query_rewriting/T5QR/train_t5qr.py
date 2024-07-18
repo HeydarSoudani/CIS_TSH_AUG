@@ -37,8 +37,6 @@ def save_model(output_checkpoint_path, model, query_tokenizer, epoch):
     query_tokenizer.save_pretrained(output_dir)
     logger.info("Save checkpoint at {}".format(output_dir))
 
-
-
 def train_t5qr(args):
     if args.need_output:
         # check_dir_exist_or_build([args.log_path], args.force_emptying_dir)
@@ -154,7 +152,6 @@ def train_t5qr(args):
     
     logger.info("Training finish!")
 
-
 def validation(model, dev_dataloader):
     dev_loss = 0.0
     with torch.no_grad():
@@ -171,7 +168,6 @@ def validation(model, dev_dataloader):
             dev_loss += loss
             
     return dev_loss
-
 
 def get_args():
     parser = argparse.ArgumentParser()

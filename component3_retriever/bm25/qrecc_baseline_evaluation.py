@@ -151,9 +151,9 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
     parser.add_argument("--index_dir", type=str, default="corpus/QReCC/bm25_index")
-    parser.add_argument("--query_file", type=str, default="processed_datasets/QReCC/test.json")
-    parser.add_argument("--results_base_path", type=str, default="component3_retriever/results/QReCC")
-    parser.add_argument("--query_format", type=str, default="human_rewritten", choices=['original', 'human_rewritten', 'all_history', 'same_topic'])
+    parser.add_argument("--query_file", type=str, default="processed_datasets/QReCC/new_test.json")
+    parser.add_argument("--results_base_path", type=str, default="component3_retriever/output_results/QReCC")
+    parser.add_argument("--query_format", type=str, default="original", choices=['original', 'human_rewritten', 'all_history', 'same_topic'])
     parser.add_argument("--bm25_k1", type=float, default="0.9")
     parser.add_argument("--bm25_b", type=float, default="0.4")
     parser.add_argument("--top_k", type=int, default="100")
