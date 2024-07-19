@@ -280,9 +280,6 @@ def triplet_extraction(input_file):
     
     with open(input_file, "w") as output_file:
         json.dump(new_conversation_data, output_file, indent=2)
-        
-
-
 
 # Function to get categories from Wikidata
 def get_wikidata_categories(wikidata_id):
@@ -319,7 +316,6 @@ def map_to_high_level_category(categories):
                     mapped_categories[high_level] = []
                 mapped_categories[high_level].append(category)
     return mapped_categories
-
 
 if __name__ == "__main__":
     
