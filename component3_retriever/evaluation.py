@@ -76,7 +76,8 @@ def bm25_evaluation_per_turn(args):
     print(f"=== Evaluating {args.dataset_name} {args.query_format} ...")
     
     # === Read files ====================
-    bucket_file = f"processed_datasets/{args.dataset_name}/turn_buckets/per_turn_number.json"
+    
+    bucket_file = f"processed_datasets/{args.dataset_name}/turn_buckets/per_{args.bucket_type}.json"
     with open(bucket_file, 'r') as f:
         bucket_data = json.load(f)
     results_file = f"component3_retriever/output_results/{args.dataset_name}/{args.query_format}_bm25_results.trec"
@@ -86,7 +87,7 @@ def bm25_evaluation_per_turn(args):
     with open(gold_qrel_file, 'r') as f:
         qrel_data = f.readlines()
 
-    # === Prepare gold qrels ============
+    # === Prepare gold qrels ==============
     qrels = {}
     qrels_ndcg = {}
     query_id = []
@@ -131,9 +132,9 @@ def bm25_evaluation_per_turn(args):
         "Recall@20": [],
         "Recall@100": []
     }
-    for turn_num, turn_samples in bucket_data.items():
+    for bk_title, bk_samples in bucket_data.items():
         # print(f"Turn number: {turn_num}")
-        bucket_runs = {key: runs[key] for key in turn_samples if key in runs}
+        bucket_runs = {key: runs[key] for key in bk_samples if key in runs}
         
         # === Calculate eval metrics ==========
         evaluator = pytrec_eval.RelevanceEvaluator(qrels, {"map", "recip_rank", "recall.5", "recall.10", "recall.20", "recall.100"})
@@ -164,13 +165,14 @@ def bm25_evaluation_per_turn(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_name", type=str, default="INSCIT", choices=["QReCC", "TopiOCQA", "INSCIT"])
+    parser.add_argument("--bucket_type", type=str, default="shift", choices=["turn_number", "shift"])
     parser.add_argument("--query_format", type=str, default="ConvGQR_rewritten", choices=['original', 'human_rewritten', 'all_history', 'same_topic', 't5_rewritten', 'ConvGQR_rewritten'])
     parser.add_argument("--rel_threshold", type=int, default="1")
     args = parser.parse_args()
     
     # bm25_evaluation(args)
     bm25_evaluation_per_turn(args)
-            
+
 # python component3_retriever/evaluation.py
 
 
