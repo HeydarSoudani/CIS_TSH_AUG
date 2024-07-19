@@ -532,7 +532,7 @@ def get_args():
 
     parser.add_argument("--config",
                         type = str,
-                        required = True,
+                        defualt = "component1_query_rewriting/HAConvDR/TopiOCQA/2_test_PRJ_topiocqa.toml",
                         help = "Config file path.")
 
     args = parser.parse_args()

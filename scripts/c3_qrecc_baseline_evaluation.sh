@@ -10,10 +10,12 @@
 # Loading modules
 module load 2022
 module load Python/3.10.4-GCCcore-11.3.0
-module load Java/11.0.2
+# module load Java/11.0.2
 
 # pip install git+https://github.com/huggingface/transformers
-srun $HOME/CIS_TSH_AUG/component3_retriever/bm25/qrecc_baseline_t5_evaluation.py
+# srun $HOME/CIS_TSH_AUG/component3_retriever/bm25/qrecc_baseline_t5_evaluation.py
+
+srun $HOME/CIS_TSH_AUG/component1_query_rewriting/HAConvDR/TopiOCQA/1_preprocess_topiocqa.py
 
 
 # dataset_name = ["topiocqa", "inscit", "qrecc"]

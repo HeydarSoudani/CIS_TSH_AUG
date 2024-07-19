@@ -16,7 +16,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, Dataset, TensorDataset, IterableDataset
 from transformers import AdamW
 import torch.nn.functional as F
-from IPython import embed
+# from IPython import embed
 
 import sys
 
@@ -135,6 +135,7 @@ class StreamingDataset(IterableDataset):
         self.elements = elements
         self.fn = fn
         self.num_replicas = -1
+        self.total_length = len(elements)
 
     def __iter__(self):
         if dist.is_initialized():
@@ -151,6 +152,9 @@ class StreamingDataset(IterableDataset):
                 # print("yielding record")
                 # print(rec)
                 yield rec
+
+    def __len__(self):
+        return self.total_length
 
 def top_p_filtering(logits, top_p=0.0, filter_value=-float('Inf')):
     """ Filter a distribution of logits using nucleus (top-p) filtering

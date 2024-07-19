@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 ### ==============================================================================
 ### This code is based on the following files: 
 ### (1) https://github.com/fengranMark/HAConvDR/blob/main/gen_tokenized_doc.py
@@ -44,7 +46,7 @@ max_doc_character = 10000   # used before tokenizer to save tokenizer latency
 per_gpu_eval_batch_size = 250
 local_rank = -1 # Not use distributed training
 disable_tqdm = False
-n_gpu = 2
+n_gpu = 1
 
 
 def pad_input_ids(input_ids, max_length, pad_on_left=False, pad_token=0):
@@ -415,7 +417,9 @@ def StreamInferenceDoc(args,
     inference_dataset = StreamingDataset(f, fn)
     inference_dataloader = DataLoader(inference_dataset,
                                       batch_size=inference_batch_size)
-
+    
+    num_batches = len(inference_dataloader)
+    logger.info(f'The number of batches: {num_batches}')
 
     if args.local_rank != -1:
         dist.barrier()  # directory created
@@ -543,10 +547,12 @@ if __name__ == "__main__":
     os.makedirs(args.tokenized_output_path, exist_ok=True)
     os.makedirs(args.embedded_output_path, exist_ok=True)
     
-    gen_tokenized_doc(args)
+    # gen_tokenized_doc(args)
     
     args.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print("device:", args.device)
     gen_doc_embeddings(args)
+    
+    # python component0_preprocessing/corpus_indexing/dense_corpus_indexing.py
     
     
