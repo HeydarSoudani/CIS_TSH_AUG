@@ -14,13 +14,14 @@ def plot_per_turn_number(args):
         }
     
     x = range(1, max_turn_num+1)
-    plt.figure()
+    plt.figure(figsize=(7, 5))
     for label, value in y_r100.items():
         plt.plot(x, value, label=label)
     
     plt.title(f'Dataset: {args.dataset_name}')
     plt.xlabel('Turn Number')
     plt.ylabel('Recall@100')
+    plt.ylim(0.0, 0.91)
     plt.legend()
     plt.tight_layout()
 
