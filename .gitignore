@@ -121,7 +121,7 @@ script_logging/
 HeydarS
 
 
-analysis
+# analysis
 corpus
 datasets
 processed_datasets
