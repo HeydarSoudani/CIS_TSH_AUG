@@ -35,7 +35,7 @@ test_file_path = "datasets/topiocqa/train_rel.json"
 gold_qrel_file_path = "processed_datasets/TopiOCQA/ir_all_history_dev.json"
 
 passage_collection_path= "corpus/TopiOCQA/full_wiki_segments.tsv"
-passage_embeddings_dir_path = "datasets/topiocqa/embeds"
+passage_embeddings_dir_path = "corpus/TopiOCQA/dense_embedded"
 passage_offset2pid_path = "datasets/topiocqa/tokenized/offset2pid.pickle"
 
 # [Output]

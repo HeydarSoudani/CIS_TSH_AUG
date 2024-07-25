@@ -91,7 +91,7 @@ def bm25_evaluation_per_turn(args):
     qrels = {}
     qrels_ndcg = {}
     query_id = []
-    for line in qrel_data:
+    for line in qrel_data:Z
         line = line.strip().split()
         query = line[0]
         passage = line[2]

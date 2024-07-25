@@ -39,8 +39,6 @@ Test process, perform dense retrieval on collection (e.g., MS MARCO):
 6. output the result
 '''
 
-
-
 def build_faiss_index(args):
     logger.info("Building index...")
     # ngpu = faiss.get_num_gpus()
@@ -78,7 +76,6 @@ def build_faiss_index(args):
         index = cpu_index
 
     return index
-
 
 def search_one_by_one_with_faiss(args, passge_embeddings_dir, index, query_embeddings, topN):
     merged_candidate_matrix = None
@@ -170,7 +167,6 @@ def search_one_by_one_with_faiss(args, passge_embeddings_dir, index, query_embed
     logger.info(merged_I.shape)
     return merged_D, merged_I
 
-
 def get_test_query_embedding(args):
     set_seed(args)
 
@@ -213,7 +209,6 @@ def get_test_query_embedding(args):
     torch.cuda.empty_cache()
 
     return embeddings, embedding2id
-
 
 def output_test_res(query_embedding2id,
                     retrieved_scores_mat, # score_mat: score matrix, test_query_num * (top_n * block_num)
@@ -394,7 +389,6 @@ def print_trec_res(run_file, qrel_file, rel_threshold, input_query_file):
     logger.info(res)
     return res
 
-
 def print_res(result_file, gold_file):
     final_scores = {}
 
@@ -470,7 +464,6 @@ def improve_judge(input_query_file, score_list):
             base_score = 0
 
     return rel_label
-
 
 def gen_metric_score_and_save(args, index, query_embeddings, query_embedding2id):
     # score_mat: score matrix, test_query_num * (top_n * block_num)
