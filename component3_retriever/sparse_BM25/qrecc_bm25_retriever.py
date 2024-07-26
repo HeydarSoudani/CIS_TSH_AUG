@@ -7,8 +7,7 @@ import numpy as np
 import argparse, os, json
 from pyserini.search.lucene import LuceneSearcher
 
-print("Available GPUs:", torch.cuda.device_count())
-device = 'cuda:0'
+
 subset_percentage = 1.0
 
 def set_seed(seed):
@@ -120,9 +119,14 @@ if __name__ == "__main__":
     parser.add_argument("--bm25_k1", type=float, default="0.9")
     parser.add_argument("--bm25_b", type=float, default="0.4")
     parser.add_argument("--top_k", type=int, default="100")
-    parser.add_argument("--seed", type=int, default="1")
+    parser.add_argument("--seed", type=int, default=42)
     
     args = parser.parse_args()
+    
+    # print("Available GPUs:", torch.cuda.device_count())
+    # device = 'cuda:0'
+    set_seed(args.seed)
+    
     bm25_retriever(args)
     
     # python component3_retriever/bm25/qrecc_baseline_t5_evaluation.py

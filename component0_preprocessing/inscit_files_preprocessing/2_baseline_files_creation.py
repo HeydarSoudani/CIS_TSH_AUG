@@ -20,10 +20,10 @@ def prepare_qrels_gold():
 # Src: https://github.com/ellenmellon/INSCIT/blob/main/models/DPR/prepare_data.py
 def prepare_quries_original():
     subsec = "test"
-    data_file = f'datasets/INSCIT/{subsec}.json'
-    output_file_path = f'component3_retriever/data/INSCIT/{subsec}/original.jsonl'
-    os.makedirs(f'component3_retriever/data/INSCIT', exist_ok=True)
-    os.makedirs(f'component3_retriever/data/INSCIT/{subsec}', exist_ok=True)
+    data_file = f'corpus/INSCIT/{subsec}.json'
+    output_file_path = f'component3_retriever/input_data/INSCIT/baselines/{subsec}/original.jsonl'
+    os.makedirs(f'component3_retriever/input_data/INSCIT', exist_ok=True)
+    os.makedirs(f'component3_retriever/input_data/INSCIT/{subsec}', exist_ok=True)
     
     with open(data_file, 'rb') as fin, open(output_file_path, 'w') as out_file:
         content = json.load(fin)
@@ -38,7 +38,7 @@ def prepare_quries_original():
                 answers = [' '.join(l['response'].split()) for l in turn['labels']]
                 
                 pos_ctxs = []
-                added = set()
+                pids = []
                 for label in turn['labels']:
                     for e in label['evidence']:
                         pos_ctx = {}
@@ -49,17 +49,22 @@ def prepare_quries_original():
                         pos_ctx["title_score"] = 1
                         pid = e['passage_id']
                         pos_ctx['passage_title_id'] = pid
-                        if pid in added:
-                            continue
-                        added.add(pid)
+                        if pid not in pids:
+                            pids.append(pid)
                         pos_ctxs += [pos_ctx]
                 passages = pos_ctxs
+
+                if len(pids) > 0:
+                    topic = pids[0].split(':')[0]
+                else:
+                    topic = ""
 
                 out_file.write(json.dumps({
                     "id": query_id,
                     "conv_name": conv_name,
                     "conv_id": conv_id,
                     "turn_id": turn_id,
+                    "topic": topic,
                     "query": query,
                     "answers": answers,
                     "passages": passages
@@ -114,10 +119,10 @@ def prepare_quries_all_history():
 
 def prepare_quries_same_topic():
     subsec = "test"
-    data_file = f'datasets/INSCIT/{subsec}.json'
-    output_file_path = f'component3_retriever/data/INSCIT/{subsec}/same_topic.jsonl'
-    os.makedirs(f'component3_retriever/data/INSCIT', exist_ok=True)
-    os.makedirs(f'component3_retriever/data/INSCIT/{subsec}', exist_ok=True)
+    data_file = f'corpus/INSCIT/{subsec}.json'
+    output_file_path = f'component3_retriever/input_data/INSCIT/baselines/{subsec}/same_topic.jsonl'
+    os.makedirs(f'component3_retriever/input_data/INSCIT', exist_ok=True)
+    os.makedirs(f'component3_retriever/input_data/INSCIT/{subsec}', exist_ok=True)
     
     with open(data_file, 'rb') as fin, open(output_file_path, 'w') as out_file:
         content = json.load(fin)
@@ -130,20 +135,22 @@ def prepare_quries_same_topic():
                 answers = [' '.join(l['response'].split()) for l in turn['labels']]
                 
                 # == Get query =============          
-                prev_pids = []
-                if len(turn["prevEvidence"]) > 0:
-                    for e in turn["prevEvidence"][-1]:
-                        prev_pids.append(e['passage_id'])
+                # prev_pids = []
+                # if len(turn["prevEvidence"]) > 0:
+                #     for e in turn["prevEvidence"][-1]:
+                #         prev_pids.append(e['passage_id'])
                 
                 current_pids = []
                 for label in turn['labels']:
                     for e in label['evidence']:
-                        current_pids.append(e['passage_id'])
+                        topic = e['passage_id'].split(':')[0]
+                        current_pids.append(topic)
                     
                 query = ""
                 for pturn_idx, pe in enumerate(turn["prevEvidence"]):
                     for e in pe:
-                        if e['passage_id'] in current_pids:
+                        prev_topic = e['passage_id'].split(':')[0]
+                        if prev_topic in current_pids:
                             query += f"{turn['context'][2*pturn_idx]} [SEP] {turn['context'][2*pturn_idx+1]} [SEP] "
                             break
                 query += turn['context'][-1]
@@ -168,11 +175,17 @@ def prepare_quries_same_topic():
                         pos_ctxs += [pos_ctx]
                 passages = pos_ctxs
                 
+                if len(current_pids) > 0:
+                    topic = current_pids[0].split(':')[0]
+                else:
+                    topic = ""
+                
                 out_file.write(json.dumps({
                     "id": query_id,
                     "conv_name": conv_name,
                     "conv_id": conv_id,
                     "turn_id": turn_id,
+                    "topic": topic,
                     "query": query,
                     "answers": answers,
                     "passages": passages
@@ -254,18 +267,18 @@ def add_pid_to_data_files():
 
 if __name__ == "__main__":
         
-    prepare_qrels_gold()
-    prepare_quries_original()
-    prepare_quries_all_history()
+    # prepare_qrels_gold()
+    # prepare_quries_original()
+    # prepare_quries_all_history()
     prepare_quries_same_topic()
-    prepare_quries_human_rewritten()
+    # prepare_quries_human_rewritten()
     
     
     # === Add passage id to the data files ========
-    title2id()
-    add_pid_to_data_files()
+    # title2id()
+    # add_pid_to_data_files()
 
     
-    # python component0_preprocessing/inscit_qas_generation/inscit_create_query_files.py
+    # python component0_preprocessing/inscit_files_preprocessing/2_baseline_files_creation.py
     
 
