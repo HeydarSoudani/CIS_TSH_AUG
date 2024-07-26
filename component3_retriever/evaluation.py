@@ -72,7 +72,7 @@ def bm25_evaluation(args):
     print("---------------------Evaluation results:---------------------")    
     print(res)
 
-def bm25_evaluation_per_turn(args):
+def bm25_evaluation_per_buckets(args):
     print(f"=== Evaluating {args.dataset_name} {args.query_format} ...")
     
     # === Read files ====================
@@ -91,7 +91,7 @@ def bm25_evaluation_per_turn(args):
     qrels = {}
     qrels_ndcg = {}
     query_id = []
-    for line in qrel_data:Z
+    for line in qrel_data:
         line = line.strip().split()
         query = line[0]
         passage = line[2]
@@ -160,38 +160,19 @@ def bm25_evaluation_per_turn(args):
         
     print("---------------------Evaluation results:---------------------")
     print(results)
-    
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset_name", type=str, default="INSCIT", choices=["QReCC", "TopiOCQA", "INSCIT"])
     parser.add_argument("--bucket_type", type=str, default="shift", choices=["turn_number", "shift"])
-    parser.add_argument("--query_format", type=str, default="ConvGQR_rewritten", choices=['original', 'human_rewritten', 'all_history', 'same_topic', 't5_rewritten', 'ConvGQR_rewritten'])
+    parser.add_argument("--query_format", type=str, default="topic+t5_rewritten", choices=[
+        'original', 'human_rewritten', 'all_history', 'same_topic', 't5_rewritten', 'ConvGQR_rewritten',
+        'topic+t5_rewritten'
+    ])
     parser.add_argument("--rel_threshold", type=int, default="1")
     args = parser.parse_args()
     
     # bm25_evaluation(args)
-    bm25_evaluation_per_turn(args)
+    bm25_evaluation_per_buckets(args)
 
 # python component3_retriever/evaluation.py
-
-
-
-
-
-
-
-
-
-# tsv_file_path = "processed_datasets/QReCC/test_gold_qrels.tsv"
-# trec_file_path = "processed_datasets/QReCC/test_gold_qrels.trec"
-# with open(tsv_file_path, 'r') as tsv_file:
-#     reader = csv.reader(tsv_file, delimiter='\t')
-
-#     with open(trec_file_path, 'w') as trec_file:
-#         for row in reader:
-#             qid, docid, score = row[0], row[2], row[3] 
-#             result_line = f"{qid} Q0 {docid} {score}"
-#             trec_file.write(result_line)
-#             trec_file.write('\n')
-    
