@@ -39,7 +39,8 @@ class LLMModel_vllm:
         
         # messages = [{"role": "user", "content": prompt}]
         # formatted_prompt = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        outputs = self.model.generate(prompt, self.sampling_params)
+        # self.sampling_params
+        outputs = self.model.generate(prompt)
         return outputs
 
 
