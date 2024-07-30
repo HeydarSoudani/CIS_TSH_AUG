@@ -28,8 +28,8 @@ def main(args):
     set_seed(args.seed)
     
     ### === Load model ===============================
-    # llama3_model = LLMModel(args.model_name_or_path)
-    llama3_model = LLMModel_hf(args.model_name_or_path)
+    llama3_model = LLMModel_vllm(args.model_name_or_path)
+    # llama3_model = LLMModel_hf(args.model_name_or_path)
     
     
     ### === Load & prepare data ======================

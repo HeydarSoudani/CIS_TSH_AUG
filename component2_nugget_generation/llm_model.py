@@ -12,10 +12,7 @@ max_model_len = 650
 
 class LLMModel_vllm:
     def __init__(self, model_name="meta-llama/Meta-Llama-3-8B-Instruct"):
-        self.model = LLM(
-            model_name,
-            gpu_memory_utilization=gpu_memory_utilization,
-            max_model_len=max_model_len)
+        self.model = LLM(model_name)
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.sampling_params = SamplingParams(
             top_p=0.9,
@@ -32,8 +29,11 @@ class LLMModel_vllm:
         # inputs = self.tokenizer(prompt, return_tensors="pt")
         # outputs = self.model.generate(**inputs, max_length=max_length)
         # return self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-    
-        outputs = self.model.generate(prompt, self.sampling_params)
+        # outputs = self.model.generate(prompt, self.sampling_params)
+        
+        messages = [{"role": "user", "content": prompt}]
+        formatted_prompt = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        outputs = self.model.generate(formatted_prompt)
         return outputs
 
 
