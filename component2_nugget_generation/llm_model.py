@@ -1,9 +1,9 @@
 
 import os
-import torch
-from transformers import pipeline
+# import torch
+# from transformers import pipeline
 from vllm import LLM, SamplingParams
-from transformers import AutoTokenizer, AutoModelForCausalLM
+# from transformers import AutoTokenizer, AutoModelForCausalLM
 
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '1'
@@ -39,40 +39,40 @@ class LLMModel_vllm:
         return outputs
 
 
-class LLMModel_hf:
-    def __init__(self, model_name="meta-llama/Meta-Llama-3-8B-Instruct"):
-        self.pipe = pipeline(
-            "text-generation",
-            model=model_name,
-            torch_dtype=torch.bfloat16,
-            device_map="auto"
-        )
-        # Params are obtained from: Generate then Retrieve
-        self.max_new_tokens = 1024
-        self.top_k = 10
-        self.top_p = 0.9
-        self.temperature = 0.75
+# class LLMModel_hf:
+#     def __init__(self, model_name="meta-llama/Meta-Llama-3-8B-Instruct"):
+#         self.pipe = pipeline(
+#             "text-generation",
+#             model=model_name,
+#             torch_dtype=torch.bfloat16,
+#             device_map="auto"
+#         )
+#         # Params are obtained from: Generate then Retrieve
+#         self.max_new_tokens = 1024
+#         self.top_k = 10
+#         self.top_p = 0.9
+#         self.temperature = 0.75
 
-    def format_prompt(self, input_text):
-        # """<|begin_of_text|><|start_header_id|>system<|end_header_id|><|eot_id|><|start_header_id|>user<|end_header_id|>\n{context}\nQuestion: {question}\n<|eot_id|>"""
-        template = "<|startoftext|>Question: {}\nAnswer:".format(input_text)
-        return template
+#     def format_prompt(self, input_text):
+#         # """<|begin_of_text|><|start_header_id|>system<|end_header_id|><|eot_id|><|start_header_id|>user<|end_header_id|>\n{context}\nQuestion: {question}\n<|eot_id|>"""
+#         template = "<|startoftext|>Question: {}\nAnswer:".format(input_text)
+#         return template
 
-    def generate_text(self, prompt):
-        _prompt = [
-            { "role": "system", "content": ""},
-            { "role": "user", "content": prompt}
-        ]
-        prompt = self.pipe.tokenizer.apply_chat_template(_prompt, tokenize=False, add_generation_prompt=True)
-        outputs = self.pipe(
-            prompt,
-            do_sample=True,
-            max_new_tokens=self.max_new_tokens,
-            temperature=self.temperature,
-            top_k=self.top_k,
-            top_p=self.top_p
-        )
-        return outputs
+#     def generate_text(self, prompt):
+#         _prompt = [
+#             { "role": "system", "content": ""},
+#             { "role": "user", "content": prompt}
+#         ]
+#         prompt = self.pipe.tokenizer.apply_chat_template(_prompt, tokenize=False, add_generation_prompt=True)
+#         outputs = self.pipe(
+#             prompt,
+#             do_sample=True,
+#             max_new_tokens=self.max_new_tokens,
+#             temperature=self.temperature,
+#             top_k=self.top_k,
+#             top_p=self.top_p
+#         )
+#         return outputs
 
 
 def nugget_extraction_prompt_first_turn(current_query, nugget_num=2):
