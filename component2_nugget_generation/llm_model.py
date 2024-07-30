@@ -26,8 +26,8 @@ class LLMModel:
         return template
 
     def generate_text(self, prompt, max_length=50):
-        # inputs = self.tokenizer(prompt, return_tensors="pt")
-        outputs = self.model.generate(prompt, self.sampling_params)
+        inputs = self.tokenizer(prompt, return_tensors="pt")
+        outputs = self.model.generate(**inputs, max_length=max_length)
         return self.tokenizer.decode(outputs[0], skip_special_tokens=True)
 
 
