@@ -4,9 +4,14 @@ import numpy as np
 import argparse, os, json, csv
 
 def bm25_evaluation(args):
-    print("Evaluating ...")
-    # === Read results and gold_qrel files ===========
-    results_file = f"component3_retriever/output_results/{args.dataset_name}/{args.query_format}_bm25_results.trec"
+    topic_text = "with gold topic" if args.add_gold_topic else "wo gold topic"
+    print(f"=== Evaluating {args.dataset_name}/{args.query_format}/{args.retriever_model}/{topic_text}...")
+    # === Read results and gold_qrel files ===========    
+    if args.add_gold_topic:
+        results_file = f"component3_retriever/output_results/{args.dataset_name}/topic+{args.query_format}_{args.retriever_model}_results.trec"
+    else:
+        results_file = f"component3_retriever/output_results/{args.dataset_name}/{args.query_format}_{args.retriever_model}_results.trec"
+    
     with open(results_file, 'r') as f:
         run_data = f.readlines()
     
@@ -73,16 +78,21 @@ def bm25_evaluation(args):
     print(res)
 
 def bm25_evaluation_per_buckets(args):
-    print(f"=== Evaluating {args.dataset_name} {args.query_format} ...")
+    topic_text = "with gold topic" if args.add_gold_topic else "wo gold topic"
+    print(f"=== Evaluating {args.dataset_name}/{args.query_format}/{args.retriever_model}/{topic_text}...")
     
     # === Read files ====================
+    if args.add_gold_topic:
+        results_file = f"component3_retriever/output_results/{args.dataset_name}/topic+{args.query_format}_{args.retriever_model}_results.trec"
+    else:
+        results_file = f"component3_retriever/output_results/{args.dataset_name}/{args.query_format}_{args.retriever_model}_results.trec"
+    with open(results_file, 'r') as f:
+        run_data = f.readlines()
     
     bucket_file = f"processed_datasets/{args.dataset_name}/turn_buckets/per_{args.bucket_type}.json"
     with open(bucket_file, 'r') as f:
         bucket_data = json.load(f)
-    results_file = f"component3_retriever/output_results/{args.dataset_name}/{args.query_format}_bm25_results.trec"
-    with open(results_file, 'r') as f:
-        run_data = f.readlines()
+
     gold_qrel_file = f"processed_datasets/{args.dataset_name}/test_gold_qrels.trec"
     with open(gold_qrel_file, 'r') as f:
         qrel_data = f.readlines()
@@ -133,7 +143,7 @@ def bm25_evaluation_per_buckets(args):
         "Recall@100": []
     }
     for bk_title, bk_samples in bucket_data.items():
-        # print(f"Turn number: {turn_num}")
+        print(f"= Bucket title: {bk_title}")
         bucket_runs = {key: runs[key] for key in bk_samples if key in runs}
         
         # === Calculate eval metrics ==========
@@ -163,16 +173,17 @@ def bm25_evaluation_per_buckets(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("--retriever_model", type=str, default="bm25", choices=["bm25", "ance"])
     parser.add_argument("--dataset_name", type=str, default="INSCIT", choices=["QReCC", "TopiOCQA", "INSCIT"])
     parser.add_argument("--bucket_type", type=str, default="shift", choices=["turn_number", "shift"])
-    parser.add_argument("--query_format", type=str, default="topic+t5_rewritten", choices=[
+    parser.add_argument("--query_format", type=str, default="same_topic", choices=[
         'original', 'human_rewritten', 'all_history', 'same_topic', 't5_rewritten', 'ConvGQR_rewritten',
-        'topic+t5_rewritten'
     ])
+    parser.add_argument("--add_gold_topic", action="store_true")
     parser.add_argument("--rel_threshold", type=int, default="1")
     args = parser.parse_args()
     
-    # bm25_evaluation(args)
-    bm25_evaluation_per_buckets(args)
+    bm25_evaluation(args)
+    # bm25_evaluation_per_buckets(args)
 
 # python component3_retriever/evaluation.py

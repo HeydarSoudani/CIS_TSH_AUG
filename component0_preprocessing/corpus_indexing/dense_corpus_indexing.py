@@ -40,10 +40,11 @@ WIKI_FILE = "corpus/TopiOCQA/full_wiki_segments.tsv"
 TOKENIZED_DOC_DIR = "corpus/TopiOCQA/dense_tokenized"
 EMBEDDED_DOC_DIR = "corpus/TopiOCQA/dense_embedded"
 model_type = "ANCE"
-pretrained_passage_encoder = "sentence-transformers/msmarco-roberta-base-ance-firstp"   # passage encoder!!!
+# pretrained_passage_encoder = "sentence-transformers/msmarco-roberta-base-ance-firstp"   # passage encoder!!!
+pretrained_passage_encoder = "castorini/ance-msmarco-passage"
 max_seq_length = 384    # The maximum total input sequence length after tokenization. Sequences longer than this will be truncated, sequences shorter will be padded."
 max_doc_character = 10000   # used before tokenizer to save tokenizer latency
-per_gpu_eval_batch_size = 250
+per_gpu_eval_batch_size = 250 # defualt= 250
 local_rank = -1 # Not use distributed training
 disable_tqdm = False
 n_gpu = 1
@@ -323,7 +324,7 @@ def InferenceEmbeddingFromStreamDataLoader(
 
     # Inference!
     logger.info("***** Running ANN Embedding Inference *****")
-    logger.info("  Batch size = %d", eval_batch_size)
+    logger.info("Batch size = %d", eval_batch_size)
 
     embedding = []
     embedding2id = []
@@ -338,11 +339,14 @@ def InferenceEmbeddingFromStreamDataLoader(
     block_id = 0
     total_write_passages = 0
 
-    for batch in tqdm(train_dataloader,
+    for bt_idx, batch in enumerate(tqdm(train_dataloader,
                     desc="Inferencing",
                     disable=args.disable_tqdm,
                     position=0,
-                    leave=True):
+                    leave=True)):
+
+        # if bt_idx == 100:
+        #     break
 
         #if batch[3][-1] <= 19999999:
         #    logger.info("Current {} ".format(batch[3][-1]))
@@ -542,14 +546,14 @@ if __name__ == "__main__":
     args.local_rank = local_rank
     args.disable_tqdm = disable_tqdm
     args.n_gpu = n_gpu
+    args.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print("device:", args.device)
     
     os.makedirs(args.tokenized_output_path, exist_ok=True)
     os.makedirs(args.embedded_output_path, exist_ok=True)
     
-    # gen_tokenized_doc(args)
     
-    args.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    print("device:", args.device)
+    # gen_tokenized_doc(args)
     gen_doc_embeddings(args)
     
     # python component0_preprocessing/corpus_indexing/dense_corpus_indexing.py
