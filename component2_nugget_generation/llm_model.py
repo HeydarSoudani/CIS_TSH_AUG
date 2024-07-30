@@ -13,7 +13,11 @@ max_model_len = 650
 class LLMModel_vllm:
     # ref: https://mohitkr777.medium.com/running-llama-3-llm-with-vllm-library-at-scale-aa9127ac0c27
     def __init__(self, model_name="meta-llama/Meta-Llama-3-8B-Instruct"):
-        self.model = LLM(model_name)
+        self.model = LLM(
+            model_name,
+            gpu_memory_utilization=gpu_memory_utilization,
+            max_model_len=max_model_len
+        )
         # self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.sampling_params = SamplingParams(
             top_k=10,
