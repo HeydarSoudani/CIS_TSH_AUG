@@ -67,17 +67,18 @@ def main(args):
                 
             response = llama3_model.generate_text(input_text)
             output_text = response[0].outputs[0].text
+            nuggets = llama3_model.pattern_extractor(output_text)
             
             print(f"Prompt: {response[0].prompt}")
             print(output_text)
+            print(f"Nuggets: {nuggets}")
             print('\n')
-            
             
             item = {
                 "query_id": query_id,
                 "question": current_query,
                 "answer": answer,
-                "nuggets": ""
+                "nuggets": nuggets
             }
             out_file.write(json.dumps(item) + '\n')
             

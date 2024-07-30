@@ -1,5 +1,7 @@
 
+import re
 import os
+import json
 # import torch
 # from transformers import pipeline
 from vllm import LLM, SamplingParams
@@ -42,6 +44,29 @@ class LLMModel_vllm:
         # self.sampling_params
         outputs = self.model.generate(prompt, self.sampling_params)
         return outputs
+
+    def pattern_extractor(self, input_text):
+        pattern = r'"nuggets": \[.*?\]}'
+        match = re.search(pattern, input_text)
+        if match:
+            nuggets_str = match.group(0)
+            # Fix the string to make it a valid JSON
+            nuggets_str = '{' + nuggets_str + '}'
+            
+            try:
+                # Convert the string to a JSON object
+                nuggets_json = json.loads(nuggets_str)
+                print(json.dumps(nuggets_json, indent=4))
+                return nuggets_json
+        
+            except json.JSONDecodeError as e:
+                print("Failed to decode JSON:", e)
+                return None
+        else:
+            print("Pattern not found in the text.")
+            return None
+        
+        
 
 
 # class LLMModel_hf:
@@ -125,3 +150,5 @@ def nugget_extraction_prompt(current_query, conv_history, nugget_num=10):
     # """.replace('    ', '')
     
     return output_text
+
+
