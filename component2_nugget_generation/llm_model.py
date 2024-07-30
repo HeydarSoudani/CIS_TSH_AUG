@@ -41,7 +41,7 @@ def nugget_extraction_prompt_first_turn(current_query, nugget_num=2):
     Generate {nugget_num} concise and insightful nuggets. Avoid basic or introductory-level information. Keep each nugget to a maximum of 4 words.
     
     Please extract nuggets from the following user query: {current_query}
-    Provide the nuggets in the following JSON format: `{{“nuggets”: [“”, “”, ...]}}`
+    Provide the nuggets in the following JSON format: `{{“nuggets”: [“”, ...]}}`
     """.replace('    ', '')
     
     return output_text
@@ -53,16 +53,30 @@ def nugget_extraction_prompt(current_query, conv_history, nugget_num=10):
     for turn_idx, prev_turn in enumerate(conv_history):
         conv_his_context += f"turn {turn_idx}: Query: {prev_turn['query']}, Answer: {prev_turn['answer']}, Grounded Passage: {prev_turn['passage']}\n"
 
-    output_text = f"""    
-    I will provide a conversation with corresponding grounded passages for each turn, followed by the current user query.
-    Your task is to extract concise nuggets from the conversation history that are relevant to the current query.
-    Generate {nugget_num} concise and insightful nuggets. Avoid basic or introductory-level information. Keep each nugget to a maximum of 4 words.
-
+    output_text = f"""
+    You are tasked with extracting key nuggets of information from conversation contexts.
+    Your goal is to identify informative nuggets that will help retrieve passages containing answers to the current query.
+    
     Conversation Context:
     {conv_his_context}
     
-    Please extract nuggets relevant to the following user query: {current_query}
-    Provide the nuggets in the following JSON format: `{{“nuggets”: [“”, “”, “”, ...]}}`
+    Current Query: {current_query}
+    
+    Generate {nugget_num} concise and insightful nuggets to aid in retrieving relevant passages for the current query.
+    Avoid basic or introductory-level information. Each nugget should be a maximum of 4 words.
+    Provide the nugget set in the following JSON format: `{{“nuggets”: [“”, “”, ...]}}`
     """.replace('    ', '')
+    
+    # output_text = f"""    
+    # I will provide a conversation with corresponding grounded passages for each turn, followed by the current user query.
+    # Your task is to extract concise nuggets from the conversation history that are relevant to the current query.
+    # Generate {nugget_num} concise and insightful nuggets. Avoid basic or introductory-level information. Keep each nugget to a maximum of 4 words.
+
+    # Conversation Context:
+    # {conv_his_context}
+    
+    # Please extract nuggets relevant to the following user query: {current_query}
+    # Provide the nugget set in the following JSON format: `{{“nuggets”: [“”, “”, ...]}}`
+    # """.replace('    ', '')
     
     return output_text
