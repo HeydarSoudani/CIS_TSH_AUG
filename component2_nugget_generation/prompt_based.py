@@ -10,6 +10,7 @@ import numpy as np
 from llm_model import LLMModel_vllm, LLMModel_hf
 from llm_model import nugget_extraction_prompt, nugget_extraction_prompt_first_turn
 
+os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 
 print("Available GPUs:", torch.cuda.device_count())
 device = 'cuda:0'
