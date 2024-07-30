@@ -71,7 +71,8 @@ def main(args):
             response = llama3_model.generate_text(input_text)
             print(response)
             # output_text = response[0].outputs[0]['text']
-            # print(output_text)
+            output_text = response.outputs[0].text
+            print(output_text)
             print('\n')
             
             

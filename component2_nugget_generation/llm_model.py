@@ -14,8 +14,9 @@ class LLMModel_vllm:
     # ref: https://mohitkr777.medium.com/running-llama-3-llm-with-vllm-library-at-scale-aa9127ac0c27
     def __init__(self, model_name="meta-llama/Meta-Llama-3-8B-Instruct"):
         self.model = LLM(model_name)
-        self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        # self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.sampling_params = SamplingParams(
+            top_k=10,
             top_p=0.9,
             temperature=0.7,
             # max_new_tokens=50,
@@ -32,9 +33,9 @@ class LLMModel_vllm:
         # return self.tokenizer.decode(outputs[0], skip_special_tokens=True)
         # outputs = self.model.generate(prompt, self.sampling_params)
         
-        messages = [{"role": "user", "content": prompt}]
-        formatted_prompt = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        outputs = self.model.generate(formatted_prompt)
+        # messages = [{"role": "user", "content": prompt}]
+        # formatted_prompt = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        outputs = self.model.generate(prompt, self.sampling_params)
         return outputs
 
 
