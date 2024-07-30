@@ -83,25 +83,31 @@ class LLMModel_hf:
         return outputs
     
     def pattern_extractor(self, input_text):
-        pattern = r'"nuggets": \[.*?\]}'
-        match = re.search(pattern, input_text)
-        if match:
-            nuggets_str = match.group(0)
-            # Fix the string to make it a valid JSON
-            nuggets_str = '{' + nuggets_str + '}'
-            
-            try:
-                # Convert the string to a JSON object
-                nuggets_json = json.loads(nuggets_str)
-                print(json.dumps(nuggets_json, indent=4))
-                return nuggets_json
+        json_part = re.search(r'{.*}', input_text, re.DOTALL).group()
+        json_part = json_part.replace('“', '"').replace('”', '"')
+        nuggets_dict = json.loads(json_part)
         
-            except json.JSONDecodeError as e:
-                print("Failed to decode JSON:", e)
-                return None
-        else:
-            print("Pattern not found in the text.")
-            return None
+        return nuggets_dict    
+        
+        # pattern = r'"nuggets": \[.*?\]}'
+        # match = re.search(pattern, input_text)
+        # if match:
+        #     nuggets_str = match.group(0)
+        #     # Fix the string to make it a valid JSON
+        #     nuggets_str = '{' + nuggets_str + '}'
+            
+        #     try:
+        #         # Convert the string to a JSON object
+        #         nuggets_json = json.loads(nuggets_str)
+        #         print(json.dumps(nuggets_json, indent=4))
+        #         return nuggets_json
+        
+        #     except json.JSONDecodeError as e:
+        #         print("Failed to decode JSON:", e)
+        #         return None
+        # else:
+        #     print("Pattern not found in the text.")
+        #     return None
 
 
 def nugget_extraction_prompt_first_turn(current_query, nugget_num=2):
