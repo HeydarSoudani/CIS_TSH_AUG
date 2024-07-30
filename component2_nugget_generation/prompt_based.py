@@ -66,8 +66,8 @@ def main(args):
             print(input_text) 
             print('\n')   
                 
-            formatted_prompt = llama3_model.format_prompt(input_text)
-            response = llama3_model.generate_text(formatted_prompt)
+            # formatted_prompt = llama3_model.format_prompt(input_text)
+            response = llama3_model.generate_text(input_text)
             print(response)
             print('\n')
             
