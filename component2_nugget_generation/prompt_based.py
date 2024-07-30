@@ -63,11 +63,13 @@ def main(args):
             else:
                 input_text = nugget_extraction_prompt_first_turn(current_query)
                 
-            print(input_text)    
+            print(input_text) 
+            print('\n')   
                 
-            # formatted_prompt = llama3_model.format_prompt(input_text)
-            # response = llama3_model.generate_text(formatted_prompt)
-            # print(response)
+            formatted_prompt = llama3_model.format_prompt(input_text)
+            response = llama3_model.generate_text(formatted_prompt)
+            print(response)
+            print('\n')
             
             
             item = {
