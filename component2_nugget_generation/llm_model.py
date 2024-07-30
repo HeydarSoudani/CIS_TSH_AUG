@@ -17,7 +17,7 @@ class LLMModel:
         self.sampling_params = SamplingParams(
             top_p=0.95,
             temperature=0.8,
-            max_new_tokens=50,
+            # max_new_tokens=50,
         )
 
     def format_prompt(self, input_text):
