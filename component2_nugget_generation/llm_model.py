@@ -41,7 +41,7 @@ def nugget_extraction_prompt_first_turn(current_query, nugget_num=2):
     Generate {nugget_num} concise and insightful nuggets. Avoid basic or introductory-level information. Keep each nugget to a maximum of 4 words.
     
     Please extract nuggets relevant to the following user query: {current_query}
-    Provide the nuggets in the following JSON format: `{{“nuggets”: [“”, “”]}}`
+    Provide the nuggets in the following JSON format: `{{“nuggets”: [“”, “”, ...]}}`
     """.replace('    ', '')
     
     return output_text
@@ -62,7 +62,7 @@ def nugget_extraction_prompt(current_query, conv_history, nugget_num=10):
     {conv_his_context}
     
     Please extract nuggets relevant to the following user query: {current_query}
-    Provide the nuggets in the following JSON format: `{{“nuggets”: [“”, “”, “”]}}`
+    Provide the nuggets in the following JSON format: `{{“nuggets”: [“”, “”, “”, ...]}}`
     """.replace('    ', '')
     
     return output_text
