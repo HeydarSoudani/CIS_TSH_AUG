@@ -40,7 +40,7 @@ def get_retrieved_topics_per_conversations():
         id2topic = json.load(json_file)
     
     
-    conv_num = 6
+    conv_num = 1
     # for conv_num in range(3, 206):
     print(f"== Getting topics for conversation number {conv_num} ...")
     # === Get gold topics
@@ -81,10 +81,10 @@ def get_retrieved_topics_per_conversations():
         json.dump(retrieved_topics, json_file, indent=2)
     
 def plot_topics():
-    conv_num = 6
+    conv_num = 150
     gold_topics_file = f"corpus/TopiOCQA/topic_analysis/gold_topics_{conv_num}.json"
-    # retrieved_topics_file = f"corpus/TopiOCQA/topic_analysis/retrieved_topics_{conv_num}.json"
-    retrieved_topics_file = "corpus/TopiOCQA/topic_analysis/single_retrieved_topics_6.json"
+    retrieved_topics_file = f"corpus/TopiOCQA/topic_analysis/retrieved_topics_{conv_num}.json"
+    # retrieved_topics_file = "corpus/TopiOCQA/topic_analysis/single_retrieved_topics_6.json"
 
     with open(gold_topics_file, 'r') as json_file:
         gold_topics = json.load(json_file)
@@ -205,12 +205,11 @@ def plot_topics():
     #     plt.show()
 
 if __name__ == "__main__":
-    conv_num = 1
     top_n = 100
     
     # create_id2topic_file()
-    get_retrieved_topics_per_conversations()
-    # plot_topics()
+    # get_retrieved_topics_per_conversations()
+    plot_topics()
     
     
 # python analysis/id2topic_topiocqa.py
