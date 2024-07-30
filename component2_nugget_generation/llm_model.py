@@ -15,8 +15,8 @@ class LLMModel:
             max_model_len=max_model_len)
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.sampling_params = SamplingParams(
-            top_p=0.95,
-            temperature=0.8,
+            top_p=0.9,
+            temperature=0.7,
             # max_new_tokens=50,
         )
 
