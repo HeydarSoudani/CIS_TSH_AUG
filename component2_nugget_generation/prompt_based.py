@@ -41,7 +41,7 @@ def main(args):
     with open(args.output_results_file, 'w') as out_file:
         for query_idx, (query_id, conversation_sample) in enumerate(conversation_data.items()):
             
-            if query_idx == 2:
+            if query_idx == 3:
                 break
             
             conv_id = conversation_sample["conv_id"]
@@ -69,6 +69,8 @@ def main(args):
             # formatted_prompt = llama3_model.format_prompt(input_text)
             response = llama3_model.generate_text(input_text)
             print(response)
+            output_text = response['outputs'][0]['text']
+            print(output_text)
             print('\n')
             
             

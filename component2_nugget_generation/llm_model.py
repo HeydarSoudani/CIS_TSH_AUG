@@ -4,8 +4,8 @@ from vllm import LLM, SamplingParams
 from transformers import AutoTokenizer
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
-gpu_memory_utilization = 1.0
-max_model_len = 1024
+gpu_memory_utilization = 0.9
+max_model_len = 650
 
 class LLMModel:
     def __init__(self, model_name="meta-llama/Meta-Llama-3-8B-Instruct"):
