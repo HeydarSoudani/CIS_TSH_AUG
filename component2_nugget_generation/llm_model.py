@@ -4,15 +4,20 @@ from vllm import LLM, SamplingParams
 from transformers import AutoTokenizer
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+gpu_memory_utilization = 0.9
+max_model_len = 512
 
 class LLMModel:
     def __init__(self, model_name="meta-llama/Meta-Llama-3-8B-Instruct"):
-        self.model = LLM(model_name)
+        self.model = LLM(
+            model_name,
+            gpu_memory_utilization=gpu_memory_utilization,
+            max_model_len=max_model_len)
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
         self.sampling_params = SamplingParams(
             top_p=0.95,
             temperature=0.8,
-            max_new_tokens=128,
+            max_new_tokens=50,
         )
 
     def format_prompt(self, input_text):
@@ -22,7 +27,7 @@ class LLMModel:
 
     def generate_text(self, prompt, max_length=50):
         inputs = self.tokenizer(prompt, return_tensors="pt")
-        outputs = self.model.generate(**inputs, max_length=max_length)
+        outputs = self.model.generate(**inputs, self.sampling_params)
         return self.tokenizer.decode(outputs[0], skip_special_tokens=True)
 
 
