@@ -5,7 +5,7 @@ from transformers import AutoTokenizer
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 gpu_memory_utilization = 0.9
-max_model_len = 512
+max_model_len = 256
 
 class LLMModel:
     def __init__(self, model_name="meta-llama/Meta-Llama-3-8B-Instruct"):
