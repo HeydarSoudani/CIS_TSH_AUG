@@ -66,10 +66,9 @@ def main(args):
                 input_text = nugget_extraction_prompt_first_turn(current_query)
                 
             response = llama3_model.generate_text(input_text)
-            
-            print(response[0])
-            
             output_text = response[0].outputs[0].text
+            
+            print(f"Prompt: {response[0].prompt}")
             print(output_text)
             print('\n')
             
