@@ -7,10 +7,11 @@ import random
 import argparse
 import numpy as np
 
-from llm_model import LLMModel_vllm
+from llm_model import LLMModel_hf
 from llm_model import nugget_extraction_prompt, nugget_extraction_prompt_first_turn
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+
+os.environ["CUDA_VISIBLE_DEVICES"] = '0'
 
 print("Available GPUs:", torch.cuda.device_count())
 device = 'cuda:0'
@@ -29,8 +30,8 @@ def main(args):
     set_seed(args.seed)
     
     ### === Load model ===============================
-    llama3_model = LLMModel_vllm(args.model_name_or_path)
-    # llama3_model = LLMModel_hf(args.model_name_or_path)
+    # llama3_model = LLMModel_vllm(args.model_name_or_path)
+    llama3_model = LLMModel_hf(args.model_name_or_path)
     
     
     ### === Load & prepare data ======================
@@ -43,7 +44,7 @@ def main(args):
     with open(args.output_results_file, 'w') as out_file:
         for query_idx, (query_id, conversation_sample) in enumerate(conversation_data.items()):
             
-            if query_idx == 4:
+            if query_idx == 20:
                 break
             
             conv_id = conversation_sample["conv_id"]
@@ -66,23 +67,23 @@ def main(args):
                 input_text = nugget_extraction_prompt_first_turn(current_query)
                 
             response = llama3_model.generate_text(input_text)
-            output_text = response[0].outputs[0].text
-            nuggets = llama3_model.pattern_extractor(output_text)
+            print(response)
+            # output_text = response[0].outputs[0].text
+            # nuggets = llama3_model.pattern_extractor(output_text)
             
-            print(f"Prompt: {response[0].prompt}")
-            print(output_text)
-            print(f"Nuggets: {nuggets}")
-            print('\n')
+            # print(f"Prompt: {response[0].prompt}")
+            # print(output_text)
+            # print(f"Nuggets: {nuggets}")
+            # print('\n')
             
-            item = {
-                "query_id": query_id,
-                "question": current_query,
-                "answer": answer,
-                "nuggets": nuggets
-            }
-            out_file.write(json.dumps(item) + '\n')
-            
-            
+            # item = {
+            #     "query_id": query_id,
+            #     "question": current_query,
+            #     "answer": answer,
+            #     "nuggets": nuggets
+            # }
+            # out_file.write(json.dumps(item) + '\n')
+   
 if __name__ == "__main__":
     
     # "meta-llama/Llama-2-7b-chat-hf"
