@@ -7,7 +7,7 @@ import random
 import argparse
 import numpy as np
 
-from llm_model import LLMModel
+from llm_model import LLMModel_vllm, LLMModel_hf
 from llm_model import nugget_extraction_prompt, nugget_extraction_prompt_first_turn
 
 
@@ -28,7 +28,8 @@ def main(args):
     set_seed(args.seed)
     
     ### === Load model ===============================
-    llama3_model = LLMModel(args.model_name_or_path)
+    # llama3_model = LLMModel(args.model_name_or_path)
+    llama3_model = LLMModel_hf(args.model_name_or_path)
     
     
     ### === Load & prepare data ======================
