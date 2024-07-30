@@ -22,7 +22,7 @@ class LLMModel_vllm:
         self.sampling_params = SamplingParams(
             top_k=10,
             top_p=0.9,
-            temperature=0.7,
+            temperature=0.0,
             # max_new_tokens=50,
         )
 
@@ -40,7 +40,7 @@ class LLMModel_vllm:
         # messages = [{"role": "user", "content": prompt}]
         # formatted_prompt = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
         # self.sampling_params
-        outputs = self.model.generate(prompt)
+        outputs = self.model.generate(prompt, self.sampling_params)
         return outputs
 
 
