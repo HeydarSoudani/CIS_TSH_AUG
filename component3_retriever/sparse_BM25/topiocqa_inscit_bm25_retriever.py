@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 ### ==============================================================================
 # Ref: https://github.com/fengranMark/HAConvDR/blob/main/bm25/bm25_topiocqa.py
 ### ==============================================================================
@@ -5,8 +7,6 @@
 import torch
 import random
 import numpy as np
-import pytrec_eval
-from tqdm import tqdm, trange
 import argparse, logging, os, json
 from pyserini.search.lucene import LuceneSearcher
 
@@ -35,6 +35,17 @@ def bm25_retriever(args):
     index_dir = f"{args.index_dir_base_path}/{args.dataset_name}/bm25_index"
     
     # === Read query file ====================
+    if args.add_gold_topic:
+        topics = {}
+        topic_file = f"component3_retriever/input_data/{args.dataset_name}/baselines/{args.dataset_subsec}/original.jsonl"
+        with open (topic_file, 'r') as file:
+            for line in file:
+                data = json.loads(line.strip())
+                if args.dataset_name == "TopiOCQA":
+                    topics[data['id']] = data["title"].split('[SEP]')[0]
+                elif args.dataset_name == "INSCIT":
+                    topics[data['id']] = data["topic"]
+    
     queries = {}
     if args.query_format == "t5_rewritten":
         args.query_file = f"component3_retriever/input_data/{args.dataset_name}/T5QR/t5_rewrite.json"
@@ -43,7 +54,10 @@ def bm25_retriever(args):
         
         for item in data:
             query = item["t5_rewrite"]
-            queries[item['sample_id']] = query
+            if args.add_gold_topic:
+                queries[item['sample_id']] = topics[item['sample_id']] + ' [SEP] ' + query
+            else:
+                queries[item['sample_id']] = query
     
     elif args.query_format == "ConvGQR_rewritten":
         query_oracle_path = "component3_retriever/input_data/INSCIT/ConvGQR/convgqr_rewrite_oracle_prefix.json"
@@ -71,39 +85,16 @@ def bm25_retriever(args):
                 elif args.eval_type == "oracle+answer":
                     queries[oracle_sample['sample_id']] = query + ' ' + query_expand_data[i]['answer_utt_text']
     
-    elif args.query_format == 'topic+t5_rewritten':
-        
-        topics = {}
-        topic_file = f"component3_retriever/input_data/{args.dataset_name}/baselines/{args.dataset_subsec}/original.jsonl"
-        with open (topic_file, 'r') as file:
-            for line in file:
-                data = json.loads(line.strip())
-                
-                if args.dataset_name == "TopiOCQA":
-                    topics[data['id']] = data["title"].split('[SEP]')[0]
-                elif args.dataset_name == "INSCIT":
-                    topics[data['id']] = data["topic"]
-
-        args.query_file = f"component3_retriever/input_data/{args.dataset_name}/T5QR/t5_rewrite.json"
-        with open(args.query_file, 'r') as file:
-            query_data = json.load(file)
-        for item in query_data:
-            query = item["t5_rewrite"]
-            queries[item['sample_id']] = topics[item['sample_id']] + ' [SEP] ' + query
-        
     else:
-        args.query_file = f"component3_retriever/data/{args.dataset_name}/{args.dataset_subsec}/{args.query_format}.jsonl"
-        
+        args.query_file = f"component3_retriever/input_data/{args.dataset_name}/baselines/{args.dataset_subsec}/{args.query_format}.jsonl"
         with open (args.query_file, 'r') as file:
             for line in file:
-                data = json.loads(line.strip())
-                queries[data['id']] = data["query"]
-
-        # query_list.append(query)
-        # if "sample_id" in oracle_sample:
-        #     qid_list.append(oracle_sample['sample_id'])
-        # else:
-        #     qid_list.append(oracle_sample['id'])
+                item = json.loads(line.strip())
+                
+                if args.add_gold_topic:
+                    queries[item['id']] = topics[item['id']] + ' [SEP] ' + item["query"]
+                else:
+                    queries[item['id']] = item["query"]
     
     
     # = Select a subset of queries ===========
@@ -116,7 +107,7 @@ def bm25_retriever(args):
 
     qid_list = list(subset_queries.keys())
     query_list = [subset_queries[qid] for qid in qid_list]
-    print(f"Query_id: {qid_list[0]}\nQuery: {query_list[0]}\n")
+    print(f"Query_id: {qid_list[1]}\nQuery: {query_list[1]}\n")
     
     
     # === Retriever Model: pyserini search ===
@@ -127,7 +118,12 @@ def bm25_retriever(args):
 
     os.makedirs(args.results_base_path, exist_ok=True)
     os.makedirs(f"{args.results_base_path}/{args.dataset_name}", exist_ok=True)
-    output_res_file = f"{args.results_base_path}/{args.dataset_name}/{args.query_format}_bm25_results.trec"
+    
+    if args.add_gold_topic:
+        output_res_file = f"{args.results_base_path}/{args.dataset_name}/topic+{args.query_format}_bm25_results.trec"
+    else:
+        output_res_file = f"{args.results_base_path}/{args.dataset_name}/{args.query_format}_bm25_results.trec"
+    
     with open(output_res_file, "w") as f:
         for qid in qid_list:
             for i, item in enumerate(hits[qid]):
@@ -143,11 +139,10 @@ if __name__ == "__main__":
     parser.add_argument("--results_base_path", type=str, default="component3_retriever/output_results")
     parser.add_argument("--dataset_name", type=str, default="INSCIT", choices=["TopiOCQA", "INSCIT"])
     parser.add_argument("--dataset_subsec", type=str, default="test", choices=["train", "dev", "test"])
-    parser.add_argument("--query_format", type=str, default="topic+t5_rewritten", choices=[
+    parser.add_argument("--query_format", type=str, default='same_topic', choices=[
         'original', 'human_rewritten', 'all_history', 'same_topic', 't5_rewritten', 'ConvGQR_rewritten',
-        'topic+t5_rewritten'
     ])
-    
+    parser.add_argument("--add_gold_topic", action="store_true")
     parser.add_argument("--query_type", type=str, default="decode", help="for ConvGQR")
     parser.add_argument("--eval_type", type=str, default="oracle+answer", help="for ConvGQR")
     
