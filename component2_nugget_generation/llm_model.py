@@ -8,7 +8,7 @@ from vllm import LLM, SamplingParams
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 gpu_memory_utilization = 0.9
-max_model_len = 700
+max_model_len = 672
 
 class LLMModel_vllm:
     # ref: https://mohitkr777.medium.com/running-llama-3-llm-with-vllm-library-at-scale-aa9127ac0c27
