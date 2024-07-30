@@ -69,7 +69,7 @@ def main(args):
             # formatted_prompt = llama3_model.format_prompt(input_text)
             response = llama3_model.generate_text(input_text)
             print(response)
-            output_text = response['outputs'][0]['text']
+            output_text = response[0]['outputs'][0]['text']
             print(output_text)
             print('\n')
             

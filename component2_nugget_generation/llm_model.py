@@ -37,10 +37,10 @@ class LLMModel:
 def nugget_extraction_prompt_first_turn(current_query, nugget_num=2):
     output_text = f"""
     I will provide a user query. 
-    Your task is to extract concise nuggets that are relevant to the current query.
+    Your task is to extract concise nuggets from the current query.
     Generate {nugget_num} concise and insightful nuggets. Avoid basic or introductory-level information. Keep each nugget to a maximum of 4 words.
     
-    Please extract nuggets relevant to the following user query: {current_query}
+    Please extract nuggets from the following user query: {current_query}
     Provide the nuggets in the following JSON format: `{{“nuggets”: [“”, “”, ...]}}`
     """.replace('    ', '')
     
