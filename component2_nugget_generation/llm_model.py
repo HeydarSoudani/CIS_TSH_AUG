@@ -56,7 +56,7 @@ class LLMModel_hf:
             device_map="auto"
         )
         # Params are obtained from: Generate then Retrieve
-        self.max_new_tokens = 1024
+        self.max_new_tokens = 150
         self.top_k = 10
         self.top_p = 0.9
         self.temperature = 0.75
@@ -83,11 +83,26 @@ class LLMModel_hf:
         return outputs
     
     def pattern_extractor(self, input_text):
-        json_part = re.search(r'{.*}', input_text, re.DOTALL).group()
-        json_part = json_part.replace('“', '"').replace('”', '"')
-        nuggets_dict = json.loads(json_part)
+        try:
+            json_part = re.search(r'"nuggets": \[[\s\S]*?\]', input_text).group()
+            json_part = '{' + json_part + '}'
+            
+            # json_part = re.search(r'{.*}', input_text, re.DOTALL).group()
+            # json_part = json_part.replace('“', '"').replace('”', '"')
+            # json_part = json_part.replace("'", '"')
+            nuggets_dict = json.loads(json_part)
+            return nuggets_dict    
         
-        return nuggets_dict    
+        except json.JSONDecodeError as e:
+            print(f"JSON Decode Error: {e}")
+            print("The input does not follow the correct JSON format. Please correct it and try again.")
+            return None
+        
+        except AttributeError as e:
+            print(f"Regex Search Error: {e}")
+            print("The input does not contain the expected 'nuggets' JSON structure. Please correct it and try again.")
+            return None
+
         
         # pattern = r'"nuggets": \[.*?\]}'
         # match = re.search(pattern, input_text)
@@ -142,18 +157,21 @@ def nugget_extraction_prompt(current_query, conv_history, nugget_num=10):
     Provide the nugget set in the following JSON format: `{{“nuggets”: [“”, “”, ...]}}`
     """.replace('    ', '')
     
-    # output_text = f"""    
-    # I will provide a conversation with corresponding grounded passages for each turn, followed by the current user query.
-    # Your task is to extract concise nuggets from the conversation history that are relevant to the current query.
-    # Generate {nugget_num} concise and insightful nuggets. Avoid basic or introductory-level information. Keep each nugget to a maximum of 4 words.
-
-    # Conversation Context:
-    # {conv_his_context}
-    
-    # Please extract nuggets relevant to the following user query: {current_query}
-    # Provide the nugget set in the following JSON format: `{{“nuggets”: [“”, “”, ...]}}`
-    # """.replace('    ', '')
-    
     return output_text
 
 
+def nugget_extraction_prompt_v2(conversation_turn, nugget_num=10):
+    
+    output_text = f"""
+    You are tasked with extracting nuggets of information from a conversation turn and its corresponding passage.
+    Your goal is to identify informative nuggets that capture the core topic and focus of the conversation turn.
+
+    Conversation Turn:
+    Query: {conversation_turn['query']}, Answer: {conversation_turn['answer']}, Grounded Passage: {conversation_turn['passage']}
+
+    Generate {nugget_num} concise and insightful nuggets that enhance understanding of the general topic of the conversation turn.
+    Avoid basic or introductory-level information. Each nugget should be a maximum of 6 words.
+    Provide the nugget set in the following JSON format: `{{“nuggets”: [“”, “”, ...]}}`
+    """.replace('    ', '')
+    
+    return output_text

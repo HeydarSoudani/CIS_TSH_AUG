@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
 import time
+from tqdm import tqdm
 import os, json, argparse
 
-from src.generator import ChatGenerator, OPENAI_KEYS
+from src.generator import ChatGenerator
 from src.llama3_generator import Llama3Generator
 from src.chat_prompter import RewriteAndResponsePromptor
 from src.utils import set_seed, get_finished_sample_ids, get_has_qrel_label_sample_ids
@@ -13,12 +14,8 @@ def main(args):
     
     # model and promptor setting
     promptor = RewriteAndResponsePromptor(args.demo_file_path, enable_cot=True)
-    # model_kwargs = {"temperature": 0.7, "max_new_tokens": 256} # "stop_tokens": ["<|endoftext|>", "STOP"]
-    # generator = Llama3Generator(args.n_generation, **model_kwargs)
-    
     model_kwargs = {"temperature": 0.7, "max_tokens": 256, "stop": promptor.stop_tokens}
-    api_key = OPENAI_KEYS[args.open_ai_key_id]
-    generator = ChatGenerator(api_key, args.n_generation, **model_kwargs)
+    generator = ChatGenerator(args.n_generation, **model_kwargs)
 
     # test_dataset    
     output_file_path = f"{args.output_dir}/{args.dataset_name}/LLM4CS/rewrites.jsonl"
@@ -29,26 +26,25 @@ def main(args):
     # predict
     begin_time = time.time()
     with open(args.test_file_path, "r") as in_f, open(output_file_path, "a+") as out_f:
-        for idx, line in enumerate(in_f):
+        for idx, line in tqdm(enumerate(in_f)):
             
-            if idx == 3:
-                break
+            # if idx == 100:
+            #     break
             
             conversation = json.loads(line.strip())
             sample_id = conversation["sample_id"]
-            
             if sample_id in finished_samples or sample_id not in has_qrel_labels_samples:
                 continue
-            
+
             prompt = promptor.build_turn_prompt_topiocqa(conversation)
-            print(prompt)
             n_outputs = generator.generate(prompt, promptor.parse_returned_text)
-            print(n_outputs)
             
             cot_list, rewrite_list, response_list = list(zip(*n_outputs))
             
-            # if idx < 10 or idx % 100 == 0:
-            
+            # if idx < 5 or idx % 100 == 0:
+            #     print(f"Id: {sample_id}")
+            #     print(f"Rewrite list: {rewrite_list}")
+            #     print(f"Response list: {response_list}")
             
             record = {}
             record['sample_id'] = sample_id
@@ -79,4 +75,4 @@ if __name__ == '__main__':
     
     main(args)
     
-    # python component1_query_rewriting/LLM4CS/chat_prompt_cot_rar.py
+    # python component1_query_rewriting/LLM4CS/1_chat_prompt_cot_rar_topiocqa.py

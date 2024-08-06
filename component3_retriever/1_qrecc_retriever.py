@@ -74,6 +74,7 @@ def bm25_retriever(args):
                 
                 queries[data['sample_id']] = query
     
+    
     # = Select a subset of queries ===========
     if subset_percentage != 1.0:
         subset_size = int(len(queries) * subset_percentage)
@@ -85,6 +86,7 @@ def bm25_retriever(args):
     qid_list = list(subset_queries.keys())
     query_list = [subset_queries[qid] for qid in qid_list]
     print(f"Query_id: {qid_list[0]}\nQuery: {query_list[0]}\n") # Print a sample
+    
     
     # === Retriever Model: pyserini search ===
     print("Retrieving using BM25 ...")

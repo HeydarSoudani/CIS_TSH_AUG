@@ -90,7 +90,7 @@ class RewritePromptor:
                 return None
 
 class RewriteAndResponsePromptor:
-    def __init__(self, demo_file, enable_cot=False) -> None:    
+    def __init__(self, demo_file, enable_cot=False) -> None:
         
         self.instruction = "For an information-seeking dialog, please help reformulate the question into rewrite that can fully express the user's information needs without the need of context, but also generate an informative response to answer the question."
         self.enable_cot = enable_cot
