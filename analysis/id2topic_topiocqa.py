@@ -30,8 +30,8 @@ def get_retrieved_topics_per_conversations():
     with open(gold_qrels_file, 'r') as f:
         gold_qrel_data = f.readlines()
     
-    # result_qrels_file = "component3_retriever/output_results/TopiOCQA/t5_rewritten_bm25_results.trec"
-    result_qrels_file = "component3_retriever/output_results/TopiOCQA/single_query_bm25_results.trec"
+    result_qrels_file = "component3_retriever/output_results/TopiOCQA/t5_rewritten_bm25_results.trec"
+    # result_qrels_file = "component3_retriever/output_results/TopiOCQA/single_query_bm25_results.trec"
     with open(result_qrels_file, 'r') as f:
         result_qrel_data = f.readlines()
         
@@ -82,8 +82,8 @@ def get_retrieved_topics_per_conversations():
     
 def plot_topics():
     conv_num = 150
-    gold_topics_file = f"corpus/TopiOCQA/topic_analysis/gold_topics_{conv_num}.json"
-    retrieved_topics_file = f"corpus/TopiOCQA/topic_analysis/retrieved_topics_{conv_num}.json"
+    gold_topics_file = f"corpus/TopiOCQA/topic_analysis_t5qr_gt/gold_topics_{conv_num}.json"
+    retrieved_topics_file = f"corpus/TopiOCQA/topic_analysis_t5qr_gt/single_retrieved_topics_{conv_num}.json"
     # retrieved_topics_file = "corpus/TopiOCQA/topic_analysis/single_retrieved_topics_6.json"
 
     with open(gold_topics_file, 'r') as json_file:
