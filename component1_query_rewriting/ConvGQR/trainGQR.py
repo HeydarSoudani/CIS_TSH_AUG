@@ -79,8 +79,8 @@ def train(args, log_writer):
     args.batch_size = args.per_gpu_train_batch_size * max(1, args.n_gpu)
     
     # data prepare
-    # train_dataset = T5RewriterIRDataset_topiocqa(args, query_tokenizer, args.train_file_path)
-    train_dataset = T5RewriterIRDataset_qrecc(args, query_tokenizer, args.train_file_path)
+    train_dataset = T5RewriterIRDataset_topiocqa(args, query_tokenizer, args.train_file_path)
+    # train_dataset = T5RewriterIRDataset_qrecc(args, query_tokenizer, args.train_file_path)
     train_loader = DataLoader(train_dataset, 
                                 #sampler=train_sampler,
                                 batch_size = args.batch_size, 
@@ -180,7 +180,7 @@ def get_args():
     # model_output_path: component1_query_rewriting/ConvGQR/query_rewriter_models/QReCC/checkpoints
     
     # === TopiOCQA
-    # train_file_path: processed_datasets/TopiOCQA/train/train_with_doc.json
+    # train_file_path: processed_datasets/TopiOCQA/train_new.json
     
     # === INSCIT
     # train_file_path: processed_datasets/INSCIT/train_new_qrecc_format.json
@@ -189,17 +189,16 @@ def get_args():
     
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("--train_file_path", type=str, default="processed_datasets/INSCIT/train_new_qrecc_format.json")
-    parser.add_argument("--log_dir_path", type=str, default="component1_query_rewriting/ConvGQR/query_rewriter_models/INSCIT/log")
-    parser.add_argument('--model_output_path', type=str, default="component1_query_rewriting/ConvGQR/query_rewriter_models/INSCIT/checkpoints")
+    parser.add_argument("--dataset_name", type=str, default="TopiOCQA", choices=["QReCC", "TopiOCQA", "INSCIT"])
+    parser.add_argument("--train_file_path", type=str, default="processed_datasets/TopiOCQA/train_new.json")
     
-    parser.add_argument("--decode_type", type=str, default="answer", choices=["oracle", "answer"])
+    parser.add_argument("--decode_type", type=str, default="oracle", choices=["oracle", "answer"])
     parser.add_argument("--num_train_epochs", type=int, default=15, help="num_train_epochs")
     parser.add_argument("--per_gpu_train_batch_size", type=int,  default=16)
     parser.add_argument("--collate_fn_type", type=str, default="flat_concat_for_train")
     
     parser.add_argument("--pretrained_query_encoder", type=str, default="google-t5/t5-base")
-    parser.add_argument("--pretrained_passage_encoder", type=str, default="sentence-transformers/msmarco-roberta-base-ance-firstp")
+    parser.add_argument("--pretrained_passage_encoder", type=str, default="castorini/ance-msmarco-passage")
     parser.add_argument("--use_prefix", type=bool, default=True)
     parser.add_argument("--use_data_percent", type=float, default=1)
     parser.add_argument("--max_query_length", type=int, default=32, help="Max single query length")
@@ -219,6 +218,10 @@ def get_args():
     parser.add_argument("--max_grad_norm", type=float, default=1.0)
 
     args = parser.parse_args()
+    
+    args.log_dir_path = f"component1_query_rewriting/ConvGQR/query_rewriter_models/{args.dataset_name}/log"
+    args.model_output_path= f"component1_query_rewriting/ConvGQR/query_rewriter_models/{args.dataset_name}/checkpoints"
+
 
     # pytorch parallel gpu
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")#, args.local_rank)
