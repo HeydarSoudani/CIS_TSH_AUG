@@ -55,8 +55,22 @@ if __name__ == "__main__":
     # = Step 1) Convert corpus to pyserini file
     convert_to_pyserini_file(args)
     
-    # = Step 2) Index corpus using pyserini
+    # = Step 2-1) BM25 corpus indexing using pyserini
     # python -m pyserini.index -collection JsonCollection -generator DefaultLuceneDocumentGenerator -threads 20 -input "corpus/QReCC" -index "corpus/QReCC/bm25_index" -storePositions -storeDocvectors -storeRaw
-
-    # python component0_preprocessing/corpus_indexing/bm25_corpus_indexing.py
+        
+    # = Step 2-2) ANCE corpus indexing using pyserini
+    # python -m pyserini.encode \
+    #   input   --corpus corpus/TopiOCQA/full_wiki_segments_pyserini_format.jsonl \
+    #           --fields text \
+    #           --delimiter "\n" \
+    #           --shard-id 0 \
+    #           --shard-num 1 \
+    #   output  --embeddings corpus/TopiOCQA/ance_index \
+    #           --to-faiss \
+    #   encoder --encoder castorini/ance-msmarco-passage \
+    #           --fields text \
+    #           --batch 32 \
+    #           --fp16
     
+    
+# python component0_preprocessing/corpus_indexing/bm25_corpus_indexing.py

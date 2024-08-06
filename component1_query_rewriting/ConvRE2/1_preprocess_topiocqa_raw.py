@@ -2,40 +2,27 @@ import argparse
 import os
 import json
 from tqdm import tqdm
-import pickle
-# from IPython import embed
 import csv
 import random
-from sklearn.model_selection import train_test_split
 
+
+collection_tsv = "datasets/topiocqa/full_wiki_segments.tsv"
+collection_json = "datasets/topiocqa/full_wiki_segments.jsonl"
+train = "datasets/topiocqa/topiocqa_train.json"
+dev = "datasets/topiocqa/topiocqa_dev.json"
+train_gold = "datasets/topiocqa/ir_all_history_train.json"
+dev_gold = "datasets/topiocqa/ir_all_history_dev.json"
+train_rewrite = "datasets/topiocqa/ir_rewrite_train.json"
+dev_rewrite = "datasets/topiocqa/ir_rewrite_dev.json"
+train_new = "datasets/topiocqa/train_new.json"
+dev_new = "datasets/topiocqa/dev_new.json"
+train_trec_gold = "datasets/topiocqa/train_gold.trec"
+dev_trec_gold = "datasets/topiocqa/dev_gold.trec"
 
 
 id_col= 0
 text_col= 1
 title_col = 2
-
-
-# # def gen_topiocqa_qrel(raw_dev_file_path, output_qrel_file_path):
-# def gen_topiocqa_qrel():
-#     '''
-#     raw_dev_file_path = "gold_dev.json"
-#     output_qrel_file_path = "topiocqa_qrel.trec"
-#     '''
-#     raw_dev_file_path = 'datasets/TopiOCQA/ir_all_history_dev.json'
-#     output_qrel_file_path = 'component3_retriever/data/topiocqa/dev/qrel_gold.trec'
-    
-#     with open(raw_dev_file_path, "r") as f:
-#         data = json.load(f)
-    
-#     with open(output_qrel_file_path, "w") as f:
-#         for line in tqdm(data):
-#             sample_id = "{}_{}".format(line["conv_id"], line["turn_id"])
-#             for pos in line["positive_ctxs"]:
-#                 #pid = int(pos["passage_id"]) - 1
-#                 pid = int(pos["passage_id"])
-#                 f.write("{} {} {} {}".format(sample_id, 0, pid, 1))
-#                 f.write('\n')
-
 
 # .tsv -> .jsonl
 def convert_collection(collection_tsv, collection_json):
@@ -63,7 +50,7 @@ def load_collection(collection_file, title = False):
             for line in f:
                 line = line.strip()
                 obj = json.loads(line)
-                pid = int(obj["id"][3:]) # remove "doc" keyword from doc_id 
+                pid = int(obj["id"][3:])
                 #passage = obj["title"] + "[SEP]" + obj["text"]
                 passage = obj["title"] + obj["text"]
                 all_passages[pid] = passage
@@ -159,7 +146,7 @@ def combine_data_train(inputs, inputs_gold, inputs_rewrite, output, collection):
             
             g.write(
                     json.dumps({
-                        "id": str(conv_id) + '_' + str(turn_id),
+                        "id": str(conv_id) + '-' + str(turn_id),
                         "conv_id": conv_id,
                         "turn_id": turn_id,
                         "is_nq": is_nq,
@@ -224,7 +211,7 @@ def combine_data_test(inputs, inputs_gold, inputs_rewrite, output):
 
             g.write(
                     json.dumps({
-                        "id": str(conv_id) + '_' + str(turn_id),
+                        "id": str(conv_id) + '-' + str(turn_id),
                         "conv_id": conv_id,
                         "turn_id": turn_id,
                         "is_nq": is_nq,
@@ -259,58 +246,10 @@ def convert_gold_to_trec(gold_file, trec_file):
                                         ))
             g.write('\n')
 
-def test_file_to_qrecc_format(input_file, output_file):
-    with open(input_file, 'r') as file, open(output_file, "w") as of:
-        for line in file:
-            x = json.loads(line.strip())
-            
-            item = {
-                "sample_id": x["id"],
-                "cur_utt_text": x["query"],
-                "oracle_utt_text": x["rewrite"],
-                "cur_response_text": x["answer"],
-                "ctx_utts_text": x["history_query"],
-                "ctx_resps_text": x["history_answer"],
-                "pos_docs_pids": x["pos_docs_id"]
-            }
-            of.write(json.dumps(item) + '\n')
-            
 
 if __name__ == "__main__":
-    
-    # ===== Step 1) download files ==============
-    # wget https://zenodo.org/records/6149599/files/data/wikipedia_split/full_wiki_segments.tsv -O corpus/TopiOCQA/full_collection_segments.tsv
-    # wget https://zenodo.org/records/7709644/files/topiocqa_train.json -O corpus/TopiOCQA/topiocqa_train.json
-    # wget https://zenodo.org/records/6151011/files/data/retriever/all_history/train.json -O corpus/TopiOCQA/ir_all_history_train.json
-    # wget https://zenodo.org/records/6151011/files/data/retriever/rewrites_t5_qrecc/train.json -O corpus/TopiOCQA/ir_rewrite_train.json
-    # wget https://zenodo.org/records/7709644/files/topiocqa_dev.json -O corpus/TopiOCQA/topiocqa_dev.json
-    # wget https://zenodo.org/records/6151011/files/data/retriever/all_history/dev.json -O corpus/TopiOCQA/ir_all_history_dev.json
-    # wget https://zenodo.org/records/6151011/files/data/retriever/rewrites_t5_qrecc/dev.json -O corpus/TopiOCQA/ir_rewrite_dev.json
-    
-    # ===== Step 2) Process files ===============
-    # = Input files ======
-    collection_tsv = "corpus/TopiOCQA/full_wiki_segments.tsv"
-    train = "corpus/TopiOCQA/topiocqa_train.json"
-    dev = "corpus/TopiOCQA/topiocqa_dev.json"
-    train_gold = "processed_datasets/TopiOCQA/ir_all_history_train.json"
-    dev_gold = "corpus/TopiOCQA/ir_all_history_dev.json"
-    train_rewrite = "processed_datasets/TopiOCQA/ir_rewrite_train.json"
-    dev_rewrite = "corpus/TopiOCQA/ir_rewrite_dev.json"
-    # = Output files =====
-    collection_json = "corpus/TopiOCQA/full_collection_segments.jsonl"
-    train_new = "processed_datasets/TopiOCQA/train_new.json"
-    dev_new = "processed_datasets/TopiOCQA/dev_new.json"
-    train_trec_gold = "processed_datasets/TopiOCQA/train_gold.trec"
-    dev_trec_gold = "processed_datasets/TopiOCQA/dev_gold.trec"
-    
-    # convert_collection(collection_tsv, collection_json)
+    convert_collection(collection_tsv, collection_json)
     combine_data_train(train, train_gold, train_rewrite, train_new, collection_tsv)
-    # convert_gold_to_trec(train_new, train_trec_gold)
-    # combine_data_test(dev, dev_gold, dev_rewrite, dev_new)
-    # convert_gold_to_trec(dev_new, dev_trec_gold)
-    
-    # dev_qrecc_format = "processed_datasets/TopiOCQA/dev_qrecc_format.json"
-    # test_file_to_qrecc_format(dev_new, dev_qrecc_format)
-    
-# python component0_preprocessing/topiocqa_files_preprocessing/1_corpus_preprocessing.py
-
+    combine_data_test(dev, dev_gold, dev_rewrite, dev_new)
+    convert_gold_to_trec(train_new, train_trec_gold)
+    convert_gold_to_trec(dev_new, dev_trec_gold)
