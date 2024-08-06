@@ -1,7 +1,7 @@
 
 import pytrec_eval
 import numpy as np
-import argparse, os, json, csv
+import argparse, json
 
 def retiever_evaluation(args):
 
@@ -186,5 +186,6 @@ if __name__ == "__main__":
     
     retiever_evaluation(args)
     # retiever_evaluation_per_buckets(args)
+    
 
 # python component3_retriever/2_retriever_evaluation.py

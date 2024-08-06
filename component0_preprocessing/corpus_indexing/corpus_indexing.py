@@ -5,10 +5,8 @@
 # === For running on server - interactive mode
 # ssh gcn1
 # module load 2022
-# module load IPython/8.5.0-GCCcore-11.3.0
 # module load Java/11.0.2
 
-import io
 import json, os, csv
 from tqdm import tqdm
 from argparse import ArgumentParser
