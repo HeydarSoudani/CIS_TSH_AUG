@@ -19,7 +19,7 @@ def main(args):
     
     
     # === Model and promptor setting ===
-    model_wrapper = Llama3HFWrapper(max_tokens=args.max_new_tokens, sys_prompt=None) # None uses default
+    model_wrapper = Llama3HFWrapper(args.model_name_path, max_tokens=args.max_new_tokens, sys_prompt=None) # None uses default
     # model_wrapper = Llama3SGLangWrapper(max_tokens=768, sys_prompt=None) # None uses default
     promptor = RewriteAndResponsePromptor(args.demo_file_path, enable_cot=True)
     
@@ -58,7 +58,14 @@ def main(args):
 
 
 if __name__ == '__main__':
+    
+    # model_id = "HuggingFaceH4/zephyr-7b-beta"
+    # model_id = "meta-llama/Llama-2-7b-chat-hf"
+    # model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
+    # model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    
     parser = argparse.ArgumentParser()
+    parser.add_argument("--model_name_path", type=str, default="meta-llama/Meta-Llama-3-8B-Instruct")
     parser.add_argument("--test_file_path", type=str, default="processed_datasets/TopiOCQA/dev_qrecc_format.json")
     parser.add_argument("--qrel_file_path", type=str, default="processed_datasets/TopiOCQA/test_gold_qrels.trec")
     parser.add_argument("--demo_file_path", type=str, default="component1_query_rewriting/LLM4CS/src/demonstrations.json")
