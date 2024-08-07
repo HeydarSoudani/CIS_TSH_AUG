@@ -31,8 +31,8 @@ class Llama3HFWrapper:
         
         # model_id = "HuggingFaceH4/zephyr-7b-beta"
         # model_id = "meta-llama/Llama-2-7b-chat-hf"
-        # model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
-        model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+        model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
+        # model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"
         self.pipeline = pipeline(
             task="text-generation",
             model=model_id,
