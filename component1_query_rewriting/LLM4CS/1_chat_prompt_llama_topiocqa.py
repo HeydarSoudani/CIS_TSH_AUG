@@ -40,7 +40,7 @@ def main(args):
             prompt = promptor.build_turn_prompt_topiocqa(conversation)
             prompt = model_wrapper.formatter.format_prompt(prompt)
             completion = model_wrapper.get_completion_from_prompt(prompt)
-            print(completion)
+            # print(completion)
         
         # record = {}
         # record['sample_id'] = sample_id
