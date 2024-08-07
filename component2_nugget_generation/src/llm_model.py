@@ -70,7 +70,7 @@ class LLMModel_hf:
     # def __init__(self, model_name="meta-llama/Meta-Llama-3-8B-Instruct"):
     def __init__(self, model_id, max_tokens=768, temperature=0.75, sys_prompt=None):
         
-        self.pipe = pipeline(
+        self.pipeline = pipeline(
             task="text-generation",
             model=model_id,
             torch_dtype=torch.bfloat16,
