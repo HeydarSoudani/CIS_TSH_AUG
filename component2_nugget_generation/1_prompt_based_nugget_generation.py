@@ -52,7 +52,7 @@ def main(args):
     
     ### === Loop on conversation samples =======
     max_try_num = 3
-    with open(args.output_results_file, 'w') as out_file:
+    with open(args.output_file_path, 'w') as out_file:
         for query_idx, conversation_sample in enumerate(subset_conversation_data):
             
             if query_idx == 1:
