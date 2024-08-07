@@ -36,7 +36,6 @@ def main(args):
             if sample_id in finished_samples or sample_id not in has_qrel_labels_samples:
                 continue
             
-            
             prompt = promptor.build_turn_prompt_topiocqa(conversation)
             prompt = model_wrapper.formatter.format_prompt(prompt)
             completion = model_wrapper.get_completion_from_prompt(prompt)

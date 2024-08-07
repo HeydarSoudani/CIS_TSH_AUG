@@ -7,8 +7,8 @@ import random
 import argparse
 import numpy as np
 
-from llm_model import LLMModel_hf
-from llm_model import nugget_extraction_prompt, nugget_extraction_prompt_first_turn, nugget_extraction_prompt_v2
+from component2_nugget_generation.src.llm_model import LLMModel_hf
+from component2_nugget_generation.src.llm_model import nugget_extraction_prompt, nugget_extraction_prompt_first_turn, nugget_extraction_prompt_v2
 
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
@@ -88,33 +88,35 @@ def main(args):
             
             # === V2
             conversation_turn = {'query': current_query, 'answer': answer, 'passage': g_passage}
-            input_text = nugget_extraction_prompt_v2(conversation_turn)    
+            prompt = nugget_extraction_prompt_v2(conversation_turn)    
+            prompt = llama3_model.formatter.format_prompt(prompt)
+            completion = llama3_model.get_completion_from_prompt(prompt)
+            print(completion)
             
-            print(input_text)
             
-            # while True:
-            for i in range (max_try_num):
-                response = llama3_model.generate_text(input_text)
+            # # while True:
+            # for i in range (max_try_num):
+            #     response = llama3_model.generate_text(input_text)
             
-                print(f"response: {response}")
-                output_text = response[0]["generated_text"].split('<|start_header_id|>assistant<|end_header_id|>')[-1]
-                print(output_text)
-                # output_text = response[0]["generated_text"].split('/INST]')[1]
-                nuggets = llama3_model.pattern_extractor(output_text)
+            #     print(f"response: {response}")
+            #     output_text = response[0]["generated_text"].split('<|start_header_id|>assistant<|end_header_id|>')[-1]
+            #     print(output_text)
+            #     # output_text = response[0]["generated_text"].split('/INST]')[1]
+            #     nuggets = llama3_model.pattern_extractor(output_text)
             
-                print(f"Nuggets: {nuggets}")
-                print('\n')
-                if nuggets is not None:
-                    print("JSON successfully parsed!")
-                    break
-                else:
-                    print(f"LLM output is not correct for '{current_query}' in try: {i}")
+            #     print(f"Nuggets: {nuggets}")
+            #     print('\n')
+            #     if nuggets is not None:
+            #         print("JSON successfully parsed!")
+            #         break
+            #     else:
+            #         print(f"LLM output is not correct for '{current_query}' in try: {i}")
             
             item = {
                 "query_id": query_id,
                 "question": current_query,
                 "answer": answer,
-                "nuggets": nuggets
+                "nuggets": completion
             }
             out_file.write(json.dumps(item) + '\n')
    
@@ -126,11 +128,11 @@ if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_name_or_path", type=str, default="meta-llama/Meta-Llama-3-8B-Instruct")
-    parser.add_argument("--test_file", type=str, default="processed_datasets/TopiOCQA/dev_new.json")
-    parser.add_argument("--output_results_file", type=str, default="processed_datasets/TopiOCQA/dev_nuggets.json")
+    parser.add_argument("--test_file_path", type=str, default="processed_datasets/TopiOCQA/dev_new.json")
+    parser.add_argument("--output_file_path", type=str, default="processed_datasets/TopiOCQA/dev_nuggets.json")
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
     
     main(args)
     
-    # python component2_nugget_generation/prompt_based.py
+    # python component2_nugget_generation/1_prompt_based_nugget_generation.py
