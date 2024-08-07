@@ -49,14 +49,15 @@ class Llama3HFWrapper:
         for i in range(max_retry):
             
             try:
-                print(prompt)
+                # print(prompt)
                 outputs = self.pipeline(
                     prompt,
                     max_new_tokens=self.max_new_tokens,
                     do_sample=True
                 )
-                assistant_response = outputs[0]["generated_text"][-1]["content"]
-                return assistant_response
+                print(outputs)
+                # assistant_response = outputs[0]["generated_text"][-1]["content"]
+                return outputs
             
             except Exception as e:
                 print(f"Error: {e}")
