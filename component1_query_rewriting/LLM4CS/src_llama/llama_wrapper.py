@@ -55,13 +55,15 @@ class Llama3HFWrapper:
         for i in range(max_retry):
             
             try:
-                print(prompt)
-                print('======')
+                
                 outputs = self.pipeline(
                     prompt,
                     max_new_tokens=self.max_new_tokens,
                     do_sample=True
                 )
+                print(outputs)
+                print('======')
+                
                 assistant_response = outputs[len(prompt):]
                 print(assistant_response)
                 print('======')
