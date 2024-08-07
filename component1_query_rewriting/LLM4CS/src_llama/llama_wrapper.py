@@ -30,6 +30,11 @@ class PromptFormatter:
 class Llama3HFWrapper:
     def __init__(self, model_id, max_tokens=768, temperature=0.75, sys_prompt=None):
         
+        rope_scaling = {
+            'type': 'linear',  # Example value, adjust based on your model's requirements
+            'factor': 4.0
+        }
+
         self.pipeline = pipeline(
             task="text-generation",
             model=model_id,
@@ -37,6 +42,7 @@ class Llama3HFWrapper:
                 "torch_dtype": torch.float16,
                 "quantization_config": {"load_in_4bit": True},
                 "low_cpu_mem_usage": True,
+                "rope_scaling": rope_scaling
             },
         )
         self.max_new_tokens = max_tokens
