@@ -90,6 +90,10 @@ def main(args):
             conversation_turn = {'query': current_query, 'answer': answer, 'passage': g_passage}
             prompt = nugget_extraction_prompt_v2(conversation_turn)    
             prompt = llama3_model.formatter.format_prompt(prompt)
+            
+            print(prompt)
+            print('===')
+            
             completion = llama3_model.get_completion_from_prompt(prompt)
             print(completion)
             
