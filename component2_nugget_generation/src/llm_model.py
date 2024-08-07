@@ -73,14 +73,14 @@ class LLMModel_hf:
         self.pipeline = pipeline(
             task="text-generation",
             model=model_id,
-            torch_dtype=torch.bfloat16,
-            # model_kwargs={
-            #     "torch_dtype": torch.float16,
-            #     "quantization_config": {"load_in_4bit": True},
-            #     "low_cpu_mem_usage": True,
-            #     # "rope_scaling": rope_scaling
-            # },
-            device_map="auto"
+            # torch_dtype=torch.bfloat16,
+            model_kwargs={
+                "torch_dtype": torch.float16,
+                "quantization_config": {"load_in_4bit": True},
+                "low_cpu_mem_usage": True,
+                # "rope_scaling": rope_scaling
+            },
+            # device_map="auto"
         )
         # Params are obtained from: Generate then Retrieve
         self.max_new_tokens = 150
