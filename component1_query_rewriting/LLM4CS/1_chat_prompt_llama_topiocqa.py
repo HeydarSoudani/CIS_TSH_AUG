@@ -19,8 +19,9 @@ def main(args):
     
     
     # === Model and promptor setting ===
-    model_wrapper = Llama3HFWrapper(max_tokens=768, sys_prompt=None) # None uses default
+    model_wrapper = Llama3HFWrapper(max_tokens=args.max_new_tokens, sys_prompt=None) # None uses default
     # model_wrapper = Llama3SGLangWrapper(max_tokens=768, sys_prompt=None) # None uses default
+    promptor = RewriteAndResponsePromptor(args.demo_file_path, enable_cot=True)
     
     # === Predict ======================
     begin_time = time.time()
@@ -35,8 +36,9 @@ def main(args):
             if sample_id in finished_samples or sample_id not in has_qrel_labels_samples:
                 continue
             
-            promptor = RewriteAndResponsePromptor(args.demo_file_path, enable_cot=True)
+            
             prompt = promptor.build_turn_prompt_topiocqa(conversation)
+            prompt = model_wrapper.formatter.format_prompt(prompt)
             completion = model_wrapper.get_completion_from_prompt(prompt)
             print(completion)
         
@@ -62,6 +64,7 @@ if __name__ == '__main__':
     parser.add_argument("--demo_file_path", type=str, default="component1_query_rewriting/LLM4CS/src/demonstrations.json")
     parser.add_argument("--output_dir", type=str, default="component3_retriever/input_data", help='output rewrite path.')
     parser.add_argument("--dataset_name", type=str, default="TopiOCQA", choices=["QReCC", "TopiOCQA", "INSCIT"])
+    parser.add_argument("--max_new_tokens", type=int, default=256, help='')
     parser.add_argument("--n_generation", type=int, default=5, help='the number for generation')
     parser.add_argument("--seed", type=int, default=7)
     args = parser.parse_args()

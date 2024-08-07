@@ -29,6 +29,9 @@ class PromptFormatter:
 class Llama3HFWrapper:
     def __init__(self, max_tokens=768, temperature=0.75, sys_prompt=None):
         
+        # model_id = "HuggingFaceH4/zephyr-7b-beta"
+        # model_id = "meta-llama/Llama-2-7b-chat-hf"
+        # model_id = "meta-llama/Meta-Llama-3-8B-Instruct"
         model_id = "meta-llama/Meta-Llama-3.1-8B-Instruct"
         self.pipeline = pipeline(
             task="text-generation",
@@ -49,7 +52,6 @@ class Llama3HFWrapper:
         for i in range(max_retry):
             
             try:
-                prompt = self.formatter.format_prompt(prompt)
                 outputs = self.pipeline(
                     prompt,
                     max_new_tokens=self.max_new_tokens,
