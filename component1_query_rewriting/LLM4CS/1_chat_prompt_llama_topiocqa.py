@@ -71,7 +71,7 @@ if __name__ == '__main__':
     parser.add_argument("--demo_file_path", type=str, default="component1_query_rewriting/LLM4CS/src/demonstrations.json")
     parser.add_argument("--output_dir", type=str, default="component3_retriever/input_data", help='output rewrite path.')
     parser.add_argument("--dataset_name", type=str, default="TopiOCQA", choices=["QReCC", "TopiOCQA", "INSCIT"])
-    parser.add_argument("--max_new_tokens", type=int, default=256, help='')
+    parser.add_argument("--max_new_tokens", type=int, default=768, help='')
     parser.add_argument("--n_generation", type=int, default=5, help='the number for generation')
     parser.add_argument("--seed", type=int, default=7)
     args = parser.parse_args()

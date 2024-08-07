@@ -30,10 +30,10 @@ class PromptFormatter:
 class Llama3HFWrapper:
     def __init__(self, model_id, max_tokens=768, temperature=0.75, sys_prompt=None):
         
-        rope_scaling = {
-            'type': 'linear',  # Example value, adjust based on your model's requirements
-            'factor': 4.0
-        }
+        # rope_scaling = {
+        #     'type': 'linear',  # Example value, adjust based on your model's requirements
+        #     'factor': 4.0
+        # }
 
         self.pipeline = pipeline(
             task="text-generation",
@@ -42,7 +42,7 @@ class Llama3HFWrapper:
                 "torch_dtype": torch.float16,
                 "quantization_config": {"load_in_4bit": True},
                 "low_cpu_mem_usage": True,
-                "rope_scaling": rope_scaling
+                # "rope_scaling": rope_scaling
             },
         )
         self.max_new_tokens = max_tokens
@@ -61,9 +61,11 @@ class Llama3HFWrapper:
                     max_new_tokens=self.max_new_tokens,
                     do_sample=True
                 )
-                print(outputs)
+                assistant_response = outputs[len(prompt):]
+                print(assistant_response)
+                
                 # assistant_response = outputs[0]["generated_text"][-1]["content"]
-                return outputs
+                return assistant_response
             
             except Exception as e:
                 print(f"Error: {e}")
