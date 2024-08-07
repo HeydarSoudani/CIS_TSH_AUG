@@ -98,9 +98,9 @@ class LLMModel_hf:
                     prompt,
                     max_new_tokens=self.max_new_tokens,
                     do_sample=True,
-                    temperature=self.temperature,
-                    top_k=self.top_k,
-                    top_p=self.top_p
+                    # temperature=self.temperature,
+                    # top_k=self.top_k,
+                    # top_p=self.top_p
                 )
                 assistant_response = outputs[0]['generated_text'].split('<|eot_id|><|start_header_id|>assistant<|end_header_id|>')[-1]
                 return assistant_response
