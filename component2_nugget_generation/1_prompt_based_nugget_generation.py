@@ -37,7 +37,7 @@ def main(args):
     
     ### === Load & prepare data ======================
     conversation_data = []
-    with open(args.test_file, 'r') as in_file:
+    with open(args.test_file_path, 'r') as in_file:
         for line in in_file:
             sample = json.loads(line)
             conversation_data.append(sample)
