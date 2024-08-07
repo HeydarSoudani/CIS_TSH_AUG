@@ -7,8 +7,8 @@ import random
 import argparse
 import numpy as np
 
-from component2_nugget_generation.src.llm_model import LLMModel_hf
-from component2_nugget_generation.src.llm_model import nugget_extraction_prompt, nugget_extraction_prompt_first_turn, nugget_extraction_prompt_v2
+from src.llm_model import LLMModel_hf
+from src.llm_model import nugget_extraction_prompt, nugget_extraction_prompt_first_turn, nugget_extraction_prompt_v2
 
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '0'
