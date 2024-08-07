@@ -9,9 +9,9 @@ from transformers import AutoTokenizer
 # from transformers import AutoTokenizer, AutoModelForCausalLM
 
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '0'
-gpu_memory_utilization = 0.9
-max_model_len = 1024
+# os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+# gpu_memory_utilization = 0.9
+# max_model_len = 1024
 
 # class LLMModel_vllm:
 #     # ref: https://mohitkr777.medium.com/running-llama-3-llm-with-vllm-library-at-scale-aa9127ac0c27
