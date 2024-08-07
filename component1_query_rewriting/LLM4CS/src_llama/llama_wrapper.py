@@ -9,12 +9,13 @@ from transformers import AutoTokenizer
 
 
 class PromptFormatter:
-    def __init__(self, sys_prompt=None):
+    def __init__(self, model_id, sys_prompt=None):
         if sys_prompt is not None:
             self.sys_prompt = sys_prompt
         else:
             self.sys_prompt = "You are a helpful assistant."
-        self.model_name = "meta-llama/Meta-Llama-3.1-8B-Instruct"
+        
+        self.model_name = model_id
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
     
     def format_prompt(self, prompt: str) -> list:
@@ -40,7 +41,7 @@ class Llama3HFWrapper:
         )
         self.max_new_tokens = max_tokens
         self.temperature = temperature
-        self.formatter = PromptFormatter(sys_prompt)
+        self.formatter = PromptFormatter(model_id, sys_prompt)
 
 
     def get_completion_from_prompt(self, prompt: str) -> list:
