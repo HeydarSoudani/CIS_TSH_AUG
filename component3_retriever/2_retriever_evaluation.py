@@ -84,7 +84,7 @@ def retiever_evaluation_per_buckets(args):
     if args.add_topic in ["prev_topics", "cur_topic"]:
         results_file = f"component3_retriever/output_results/{args.dataset_name}/{args.add_topic}+{args.query_format}_{args.retriever_model}_results.trec"
     else:
-        results_file = f"component3_retriever/output_results/{args.dataset_name}/{args.query_format}_{args.retriever_model}_results.trec"
+        results_file = f"component3_retriever/output_results/{args.dataset_name}/{args.query_format}_{args.retriever_model}_results_v2.trec"
         
     with open(results_file, 'r') as f:
         run_data = f.readlines()
@@ -173,10 +173,10 @@ def retiever_evaluation_per_buckets(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--retriever_model", type=str, default="ance", choices=["bm25", "ance"])
+    parser.add_argument("--retriever_model", type=str, default="bm25", choices=["bm25", "ance"])
     parser.add_argument("--dataset_name", type=str, default="TopiOCQA", choices=["QReCC", "TopiOCQA", "INSCIT"])
     parser.add_argument("--bucket_type", type=str, default="shift", choices=["turn_number", "shift"])
-    parser.add_argument("--query_format", type=str, default="LLM4CS", choices=[
+    parser.add_argument("--query_format", type=str, default="ConvGQR_rewritten", choices=[
         'original', 'human_rewritten', 'all_history', 'same_topic',
         't5_rewritten', 'ConvGQR_rewritten', 'LLM4CS'
     ])

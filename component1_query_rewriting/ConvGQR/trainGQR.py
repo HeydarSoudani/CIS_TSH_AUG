@@ -192,7 +192,7 @@ def get_args():
     parser.add_argument("--dataset_name", type=str, default="TopiOCQA", choices=["QReCC", "TopiOCQA", "INSCIT"])
     parser.add_argument("--train_file_path", type=str, default="processed_datasets/TopiOCQA/train_new.json")
     
-    parser.add_argument("--decode_type", type=str, default="oracle", choices=["oracle", "answer"])
+    parser.add_argument("--decode_type", type=str, default="answer", choices=["oracle", "answer"])
     parser.add_argument("--num_train_epochs", type=int, default=15, help="num_train_epochs")
     parser.add_argument("--per_gpu_train_batch_size", type=int,  default=16)
     parser.add_argument("--collate_fn_type", type=str, default="flat_concat_for_train")

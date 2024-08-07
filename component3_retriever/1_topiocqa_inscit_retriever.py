@@ -86,8 +86,8 @@ def pyserini_retriever(args):
                 queries[item['sample_id']] = query
     
     elif args.query_format == "ConvGQR_rewritten":
-        query_oracle_path = f"component3_retriever/input_data/{args.dataset_name}/ConvGQR/convgqr_rewrite_oracle_prefix.json"
-        query_expand_path = f"component3_retriever/input_data/{args.dataset_name}/ConvGQR/convgqr_rewrite_answer_prefix.json"
+        query_oracle_path = f"component3_retriever/input_data/{args.dataset_name}/ConvGQR/convgqr_rewrite_oracle_prefix_v2.json"
+        query_expand_path = f"component3_retriever/input_data/{args.dataset_name}/ConvGQR/convgqr_rewrite_answer_prefix_v2.json"
         
         query_oracle_data = []
         query_expand_data = []
@@ -99,17 +99,32 @@ def pyserini_retriever(args):
                 query_expand_data.append(json.loads(line.strip()))
         
         for i, oracle_sample in enumerate(query_oracle_data):
-            if args.query_type == "raw":
-                queries[oracle_sample['id']] = oracle_sample["query"]
-            elif args.query_type == "rewrite":
-                queries[oracle_sample['id']] = oracle_sample['rewrite']
+            
+            if args.add_topic in ["prev_topics", "cur_topic"]:
+                if args.query_type == "raw":
+                    queries[oracle_sample['id']] = topics[item['sample_id']] + ' [SEP] ' + oracle_sample["query"]
+                elif args.query_type == "rewrite":
+                    queries[oracle_sample['id']] = topics[item['sample_id']] + ' [SEP] ' + oracle_sample['rewrite']
 
-            elif args.query_type == "decode":
-                query = oracle_sample['oracle_utt_text']
-                if args.eval_type == "answer":
-                    queries[oracle_sample['sample_id']] = query_expand_data[i]['answer_utt_text']
-                elif args.eval_type == "oracle+answer":
-                    queries[oracle_sample['sample_id']] = query + ' ' + query_expand_data[i]['answer_utt_text']
+                elif args.query_type == "decode":
+                    query = oracle_sample['oracle_utt_text']
+                    if args.eval_type == "answer":
+                        queries[oracle_sample['sample_id']] = topics[item['sample_id']] + ' [SEP] ' + query_expand_data[i]['answer_utt_text']
+                    elif args.eval_type == "oracle+answer":
+                        queries[oracle_sample['sample_id']] = topics[item['sample_id']] + ' [SEP] ' + query + ' ' + query_expand_data[i]['answer_utt_text']
+                
+            else:
+                if args.query_type == "raw":
+                    queries[oracle_sample['id']] = oracle_sample["query"]
+                elif args.query_type == "rewrite":
+                    queries[oracle_sample['id']] = oracle_sample['rewrite']
+
+                elif args.query_type == "decode":
+                    query = oracle_sample['oracle_utt_text']
+                    if args.eval_type == "answer":
+                        queries[oracle_sample['sample_id']] = query_expand_data[i]['answer_utt_text']
+                    elif args.eval_type == "oracle+answer":
+                        queries[oracle_sample['sample_id']] = query + ' ' + query_expand_data[i]['answer_utt_text']
     
     else:
         args.query_file = f"component3_retriever/input_data/{args.dataset_name}/baselines/{args.dataset_subsec}/{args.query_format}.jsonl"
@@ -156,7 +171,7 @@ def pyserini_retriever(args):
     if args.add_topic in ["prev_topics", "cur_topic"]:
         output_res_file = f"{args.results_base_path}/{args.dataset_name}/{args.add_topic}+{args.query_format}_{args.retriever_model}_results.trec"
     else:
-        output_res_file = f"{args.results_base_path}/{args.dataset_name}/{args.query_format}_{args.retriever_model}_results.trec"
+        output_res_file = f"{args.results_base_path}/{args.dataset_name}/{args.query_format}_{args.retriever_model}_results_v2.trec"
     
     with open(output_res_file, "w") as f:
         for qid in qid_list:
@@ -170,7 +185,7 @@ def pyserini_retriever(args):
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("--retriever_model", type=str, default="ance", choices=["bm25", "ance"])
+    parser.add_argument("--retriever_model", type=str, default="bm25", choices=["bm25", "ance"])
     parser.add_argument("--query_encoder", type=str, default="castorini/ance-msmarco-passage")
     parser.add_argument("--index_dir_base_path", type=str, default="corpus")
     parser.add_argument("--results_base_path", type=str, default="component3_retriever/output_results")
@@ -197,5 +212,5 @@ if __name__ == "__main__":
     set_seed(args.seed)
     pyserini_retriever(args)
     
-    # python component3_retriever/sparse_BM25/topiocqa_inscit_bm25_retriever.py
+    # python component3_retriever/1_topiocqa_inscit_retriever.py
     

@@ -101,8 +101,14 @@ def get_args():
     # === TopiOCQA
     # model_checkpoint_path_1: component1_query_rewriting/ConvGQR/query_rewriter_models/KD-ANCE-prefix-answer-best-model
     # model_checkpoint_path_2: component1_query_rewriting/ConvGQR/query_rewriter_models/KD-ANCE-prefix-oracle-best-model 
-    # test_file_path: processed_datasets/TopiOCQA/dev_qrecc_format.json
     # output_file_path: component3_retriever/input_data/TopiOCQA/ConvGQR/convgqr_rewrite_oracle_prefix.json
+    
+    # model_checkpoint_path_1: component1_query_rewriting/ConvGQR/query_rewriter_models/TopiOCQA/checkpoints/KD-ANCE-prefix-answer-best-model
+    # model_checkpoint_path_2: component1_query_rewriting/ConvGQR/query_rewriter_models/TopiOCQA/checkpoints/KD-ANCE-prefix-oracle-best-model
+    # output_file_path: component3_retriever/input_data/TopiOCQA/ConvGQR/convgqr_rewrite_oracle_prefix_v2.json
+    
+    # test_file_path: processed_datasets/TopiOCQA/dev_qrecc_format.json
+    
     
     # === INSCIT
     # model_checkpoint_path_1: component1_query_rewriting/ConvGQR/query_rewriter_models/INSCIT/checkpoints/KD-ANCE-prefix-answer-best-model
@@ -113,9 +119,9 @@ def get_args():
     
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_checkpoint_path", type=str, default="component1_query_rewriting/ConvGQR/query_rewriter_models/KD-ANCE-prefix-answer-best-model")
+    parser.add_argument("--model_checkpoint_path", type=str, default="component1_query_rewriting/ConvGQR/query_rewriter_models/TopiOCQA/checkpoints/KD-ANCE-prefix-answer-best-model")
     parser.add_argument("--test_file_path", type=str, default="processed_datasets/TopiOCQA/dev_qrecc_format.json")
-    parser.add_argument('--output_file_path', type=str, default="component3_retriever/input_data/TopiOCQA/ConvGQR/convgqr_rewrite_answer_prefix.json")
+    parser.add_argument('--output_file_path', type=str, default="component3_retriever/input_data/TopiOCQA/ConvGQR/convgqr_rewrite_answer_prefix_v2.json")
     parser.add_argument("--decode_type", type=str, default="answer", choices=["oracle", "answer"])
     
     parser.add_argument("--collate_fn_type", type=str, default="flat_concat_for_test")
@@ -153,3 +159,4 @@ if __name__ == '__main__':
     inference_t5qr(args)
     
     # python component1_query_rewriting/ConvGQR/testGQR.py
+    

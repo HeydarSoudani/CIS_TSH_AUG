@@ -61,8 +61,8 @@ def get_test_query_embedding(args):
     with torch.no_grad():
         for bc_idx, batch in enumerate(tqdm(test_loader)):
             
-            if bc_idx == 10:
-                break
+            # if bc_idx == 10:
+            #     break
             
             query_encoder.eval()
             batch_sample_id = batch["bt_sample_id"]
@@ -262,8 +262,8 @@ def improve_judge(input_query_file, score_list):
     base_score = 0
     for i, line in enumerate(data):
         
-        if i == 40:
-            break
+        # if i == 40:
+        #     break
         
         line = json.loads(line)
         id_list = line["id"].split('-')
