@@ -64,7 +64,7 @@ class Llama3HFWrapper:
                 print(outputs)
                 print('======')
                 
-                assistant_response = outputs.split('<|eot_id|><|start_header_id|>assistant<|end_header_id|>')[-1]
+                assistant_response = outputs[0]['generated_text'].split('<|eot_id|><|start_header_id|>assistant<|end_header_id|>')[-1]
                 print(assistant_response)
                 print('======')
                 
