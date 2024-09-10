@@ -38,10 +38,12 @@ def pyserini_retriever(args):
     print("Preprocessing files ...")
     index_dir = f"{args.index_dir_base_path}/{args.dataset_name}/{args.retriever_model}_index"
     
+    # ========================================
     # === Read topic =========================
     topics = {}
     topic_file = f"component3_retriever/input_data/{args.dataset_name}/baselines/{args.dataset_subsec}/original.jsonl"
-    if args.add_topic == "cur_topic":
+    
+    if args.expansion_info == "cur_topic":
         with open (topic_file, 'r') as file:
             for line in file:
                 data = json.loads(line.strip())
@@ -50,7 +52,7 @@ def pyserini_retriever(args):
                 elif args.dataset_name == "INSCIT":
                     topics[data['id']] = data["topic"]
     
-    elif args.add_topic == "prev_topics":
+    elif args.expansion_info == "prev_topics":
         conversation_data = {}
         with open(topic_file, 'r') as in_file:
             for line in in_file:
@@ -71,6 +73,117 @@ def pyserini_retriever(args):
                 
                 topics[data['id']] = ' [SEP] '.join(topics_list)
     
+    elif args.expansion_info == "gen_topic":
+        topic_file = "processed_datasets/TopiOCQA/topic_generation.json"
+        with open (topic_file, 'r') as file:
+            for line in file:
+                data = json.loads(line.strip())
+                topics[data['query_id']] = data["output"]
+      
+    elif args.expansion_info == "gen_shift_topic":
+        topic_file = "processed_datasets/TopiOCQA/cot_topic_gen_1.json"
+        with open (topic_file, 'r') as file:
+            for line in file:
+                data = json.loads(line.strip())
+                
+                if "topic" in data["output"]:
+                    topics[data['query_id']] = data["output"]["topic"]
+                else:
+                    topics[data['query_id']] = ""
+    
+    elif args.expansion_info == "gen_topic_100p_detector":
+        # topic_file = "processed_datasets/TopiOCQA/topic_gen_100p_shift_detector_2.json"
+        topic_file = "processed_datasets/TopiOCQA/topic_gen_100p_shift_detector_no_topic_2.json"
+        with open (topic_file, 'r') as file:
+            for line in file:
+                data = json.loads(line.strip())
+                
+                if "topic" in data["output"]:
+                    topics[data['query_id']] = data["output"]["topic"]
+                else:
+                    topics[data['query_id']] = ""
+    
+      
+    # ========================================    
+    # === Read nuggets =======================
+    nuggets = {}
+    # nuggets_file = "processed_datasets/TopiOCQA/dev_nuggets_2.json"
+    nuggets_file = "processed_datasets/TopiOCQA/dev_nuggets_query_hist_1.json"
+      
+    if args.expansion_info == "rand_his_nug":
+        # == Read all data =====
+        conversation_data = {}
+        with open (nuggets_file, 'r') as file:
+            for line in file:
+                sample = json.loads(line.strip())
+                conversation_data[sample['query_id']] = sample
+        
+        for q_id, data in conversation_data.items():
+            conv_id = q_id.split('_')[0]
+            turn_id = int(q_id.split('_')[1])
+            
+            if turn_id == 1:
+                nuggets[q_id] = ""
+            else:
+                nuggets_list = []
+                for tid in range(1, turn_id):
+                    nuggets_list.extend(conversation_data[f"{conv_id}_{tid}"]["nuggets"]) 
+                   
+                if args.nugget_num < len(nuggets_list):
+                    nuggets[q_id] = ' [SEP] '.join(random.sample(nuggets_list, args.nugget_num))
+                else:
+                    nuggets[q_id] = ' [SEP] '.join(nuggets_list)
+    
+    elif args.expansion_info == "comb_his_cur_nug":
+        conversation_data = {}
+        with open (nuggets_file, 'r') as file:
+            for line in file:
+                sample = json.loads(line.strip())
+                conversation_data[sample['query_id']] = sample
+        
+        for q_id, data in conversation_data.items():
+            conv_id = q_id.split('_')[0]
+            turn_id = int(q_id.split('_')[1])
+            cur_nuggets = data["nuggets"]
+            num_each_part = int(args.nugget_num/2)
+            
+            
+            if turn_id == 1:
+                if len(cur_nuggets) > args.nugget_num:
+                    nuggets[q_id] = ' [SEP] '.join(random.sample(cur_nuggets, args.nugget_num))
+                else:
+                    nuggets[q_id] = ' [SEP] '.join(cur_nuggets)
+                
+            else:
+                nuggets_list = []
+                
+                if len(cur_nuggets) > num_each_part:
+                    nuggets_list.extend(random.sample(cur_nuggets, num_each_part))
+                else:
+                    num_each_part = args.nugget_num
+                
+                for tid in range(1, turn_id):
+                    nuggets_list.extend(conversation_data[f"{conv_id}_{tid}"]["nuggets"]) 
+                   
+                if num_each_part < len(nuggets_list):
+                    nuggets[q_id] = ' [SEP] '.join(random.sample(nuggets_list, num_each_part))
+                else:
+                    nuggets[q_id] = ' [SEP] '.join(nuggets_list)
+    
+    elif args.expansion_info == "same_top_nug":
+        pass
+    
+    elif args.expansion_info in ["cur_turn_nug", "nug_v2"]:
+        with open (nuggets_file, 'r') as file:
+            for line in file:
+                data = json.loads(line.strip())
+                if args.nugget_num < len(data["nuggets"]):
+                    nuggets[data['query_id']] = ' [SEP] '.join(random.sample(data["nuggets"], args.nugget_num))
+                else:
+                    nuggets[data['query_id']] = ' [SEP] '.join(data["nuggets"])
+                    
+    
+    # ========================================
     # === Read query file ====================
     queries = {}
     if args.query_format == "t5_rewritten":
@@ -80,7 +193,7 @@ def pyserini_retriever(args):
         
         for item in data:
             query = item["t5_rewrite"]
-            if args.add_topic in ["prev_topics", "cur_topic"]:
+            if args.expansion_info in ["prev_topics", "cur_topic", "gen_topic", "gen_shift_topic", "gen_topic_100p_detector"]:
                 queries[item['sample_id']] = topics[item['sample_id']] + ' [SEP] ' + query
             else:
                 queries[item['sample_id']] = query
@@ -100,7 +213,7 @@ def pyserini_retriever(args):
         
         for i, oracle_sample in enumerate(query_oracle_data):
             
-            if args.add_topic in ["prev_topics", "cur_topic"]:
+            if args.expansion_info in ["prev_topics", "cur_topic"]:
                 if args.query_type == "raw":
                     queries[oracle_sample['id']] = topics[item['sample_id']] + ' [SEP] ' + oracle_sample["query"]
                 elif args.query_type == "rewrite":
@@ -126,15 +239,28 @@ def pyserini_retriever(args):
                     elif args.eval_type == "oracle+answer":
                         queries[oracle_sample['sample_id']] = query + ' ' + query_expand_data[i]['answer_utt_text']
     
+    elif args.query_format == "top_qr":
+        # args.query_file = "processed_datasets/TopiOCQA/topic_aware_query_rewriting_2.json"
+        args.query_file = "processed_datasets/TopiOCQA/gen_topic_aware_query_rewriting_2.json"
+        with open (args.query_file, 'r') as file:
+            for line in file:
+                item = json.loads(line.strip())
+                if len(item["rewritten"]) == 0:
+                    queries[item['query_id']] = item["question"]
+                else:
+                    queries[item['query_id']] = random.sample(item["rewritten"], 1)[0]
+    
     else:
         args.query_file = f"component3_retriever/input_data/{args.dataset_name}/baselines/{args.dataset_subsec}/{args.query_format}.jsonl"
         with open (args.query_file, 'r') as file:
             for line in file:
                 item = json.loads(line.strip())
                 
-                if args.add_topic in ["prev_topics", "cur_topic"]:
+                if args.expansion_info in ["prev_topics", "cur_topic", "gen_topic", "gen_shift_topic", "gen_topic_100p_detector"]:
                     queries[item['id']] = topics[item['id']] + ' [SEP] ' + item["query"]
-                else:
+                elif args.expansion_info in ["rand_his_nug", "same_top_nug", "cur_turn_nug", "comb_his_cur_nug", "nug_v2"]:
+                    queries[item['id']] = nuggets[item['id']] + ' [SEP] ' + item["query"]
+                elif args.expansion_info == "no":
                     queries[item['id']] = item["query"]
     
     
@@ -168,10 +294,12 @@ def pyserini_retriever(args):
     os.makedirs(args.results_base_path, exist_ok=True)
     os.makedirs(f"{args.results_base_path}/{args.dataset_name}", exist_ok=True)
     
-    if args.add_topic in ["prev_topics", "cur_topic"]:
-        output_res_file = f"{args.results_base_path}/{args.dataset_name}/{args.add_topic}+{args.query_format}_{args.retriever_model}_results.trec"
+    if args.expansion_info in ["prev_topics", "cur_topic", "gen_topic", "gen_shift_topic", "gen_topic_100p_detector"]:
+        output_res_file = f"{args.results_base_path}/{args.dataset_name}/{args.expansion_info}+{args.query_format}_{args.retriever_model}_results.trec"
+    elif args.expansion_info in ["rand_his_nug", "same_top_nug", "cur_turn_nug", "comb_his_cur_nug", "nug_v2"]:
+        output_res_file = f"{args.results_base_path}/{args.dataset_name}/{args.expansion_info}_{args.nugget_num}+{args.query_format}_{args.retriever_model}_results.trec"
     else:
-        output_res_file = f"{args.results_base_path}/{args.dataset_name}/{args.query_format}_{args.retriever_model}_results_v2.trec"
+        output_res_file = f"{args.results_base_path}/{args.dataset_name}/{args.query_format}_{args.retriever_model}_results.trec"
     
     with open(output_res_file, "w") as f:
         for qid in qid_list:
@@ -185,16 +313,23 @@ def pyserini_retriever(args):
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("--retriever_model", type=str, default="bm25", choices=["bm25", "ance"])
+    parser.add_argument("--retriever_model", type=str, default="ance", choices=["bm25", "ance"])
     parser.add_argument("--query_encoder", type=str, default="castorini/ance-msmarco-passage")
     parser.add_argument("--index_dir_base_path", type=str, default="corpus")
     parser.add_argument("--results_base_path", type=str, default="component3_retriever/output_results")
     parser.add_argument("--dataset_name", type=str, default="TopiOCQA", choices=["TopiOCQA", "INSCIT"])
     parser.add_argument("--dataset_subsec", type=str, default="dev", choices=["train", "dev", "test"])
-    parser.add_argument("--query_format", type=str, default='ConvGQR_rewritten', choices=[
-        'original', 'human_rewritten', 'all_history', 'same_topic', 't5_rewritten', 'ConvGQR_rewritten',
+    parser.add_argument("--query_format", type=str, default='original', choices=[
+        'original', 'human_rewritten', 'all_history', 'same_topic',
+        't5_rewritten', 'ConvGQR_rewritten',
+        "top_qr"
     ])
-    parser.add_argument("--add_topic", default="no", choices=["no", "cur_topic", "prev_topics"])
+    parser.add_argument("--expansion_info", default="gen_topic_100p_detector", choices=[
+        "no", "cur_topic", "prev_topics",
+        "rand_his_nug", "same_top_nug", "cur_turn_nug", "comb_his_cur_nug", "nug_v2",
+        "gen_topic", "gen_shift_topic", "gen_topic_100p_detector"
+    ])
+    parser.add_argument("--nugget_num", type=int, default=5)
     
     parser.add_argument("--query_type", type=str, default="decode", help="for ConvGQR")
     parser.add_argument("--eval_type", type=str, default="oracle+answer", help="for ConvGQR")

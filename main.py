@@ -1,4 +1,5 @@
 import csv
+import json
 
 # # Specify the input and output file paths
 # input_file = 'corpus/TopiOCQA/full_wiki_segments.tsv'
@@ -29,17 +30,46 @@ import csv
 # print(f'Extracted {num_rows_to_extract} rows (excluding header) from {input_file} and saved to {output_file}.')
 
 
-input_file_path = 'corpus/TopiOCQA/full_wiki_segments_pyserini_format.jsonl'
-output_file_path = 'corpus/TopiOCQA/full_wiki_segments_pyserini_format_0.5m.jsonl'
+# input_file_path = 'corpus/TopiOCQA/full_wiki_segments_pyserini_format.jsonl'
+# output_file_path = 'corpus/TopiOCQA/full_wiki_segments_pyserini_format_0.5m.jsonl'
 
-line_count = 0
-with open(input_file_path, 'r') as infile, open(output_file_path, 'w') as outfile:
+# line_count = 0
+# with open(input_file_path, 'r') as infile, open(output_file_path, 'w') as outfile:
+#     for line in infile:
+#         outfile.write(line)
+#         line_count += 1
+#         if line_count >= 500000:
+#             break
+
+# print(f'First {line_count} lines have been written to {output_file_path}')
+
+
+
+input_file = "processed_datasets/TopiOCQA/dev_nuggets_1.json"
+main_file = "processed_datasets/TopiOCQA/dev_nuggets.json"
+output_file = "processed_datasets/TopiOCQA/empty_nuggets.json"
+
+empty_items = []
+with open(input_file, 'r') as infile:
     for line in infile:
-        outfile.write(line)
-        line_count += 1
-        if line_count >= 500000:
-            break
+        data = json.loads(line)
+        if data['nuggets'] == []:
+            empty_items.append(data["query_id"])
 
-print(f'First {line_count} lines have been written to {output_file_path}')
+with open(main_file, 'r') as infile, open(output_file, 'w') as outfile:
+    for line in infile:
+        data = json.loads(line)
+        if data["query_id"] in empty_items:
+            item = {
+                "query_id": data["query_id"],
+                "nuggets": data["nuggets"]
+            }
+            outfile.write(json.dumps(item) + '\n')
+            
+    
+
+            
+        
+
 
 
