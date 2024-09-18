@@ -471,7 +471,7 @@ def train_dev_split_qrecc(reference_file, train_file, dev_file):
         for x in dev_data:
             fd.write(x)
 
-def test_file_add_res_context(input_file, output_file):    
+def test_file_add_res_context(input_file, output_file):
     with open(input_file, 'r') as file, open(output_file, "w") as of:
         for line in file:
             x = json.loads(line.strip())

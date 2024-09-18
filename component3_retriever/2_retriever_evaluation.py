@@ -14,6 +14,10 @@ def retiever_evaluation(args):
     else:
         results_file = f"component3_retriever/output_results/{args.dataset_name}/{args.query_format}_{args.retriever_model}_results.trec"
     
+    # results_file = "component3_retriever/output_results/TopiOCQA/cur_topic+sep_embedding_ance_results.trec"
+    # results_file = "component3_retriever/output_results/TopiOCQA/cur_topic+LLM4CS_ance_results.trec"
+    results_file = "component3_retriever/output_results/TopiOCQA/doc_topic_embedding_ance_results.trec"
+    
     with open(results_file, 'r') as f:
         run_data = f.readlines()
     
@@ -89,7 +93,11 @@ def retiever_evaluation_per_buckets(args):
         results_file = f"component3_retriever/output_results/{args.dataset_name}/{args.expansion_info}_{args.nugget_num}+{args.query_format}_{args.retriever_model}_results.trec"
     else:
         results_file = f"component3_retriever/output_results/{args.dataset_name}/{args.query_format}_{args.retriever_model}_results.trec"
-      
+    
+    # results_file = "component3_retriever/output_results/TopiOCQA/cur_topic+sep_embedding_ance_results.trec"
+    # results_file = "component3_retriever/output_results/TopiOCQA/cur_topic+LLM4CS_ance_results.trec"
+    results_file = "component3_retriever/output_results/TopiOCQA/doc_topic_embedding_ance_results.trec"
+    
     with open(results_file, 'r') as f:
         run_data = f.readlines()
     
@@ -180,12 +188,12 @@ if __name__ == "__main__":
     parser.add_argument("--retriever_model", type=str, default="ance", choices=["bm25", "ance"])
     parser.add_argument("--dataset_name", type=str, default="TopiOCQA", choices=["QReCC", "TopiOCQA", "INSCIT"])
     parser.add_argument("--bucket_type", type=str, default="shift", choices=["turn_number", "shift"])
-    parser.add_argument("--query_format", type=str, default="original", choices=[
+    parser.add_argument("--query_format", type=str, default="t5_rewritten", choices=[
         'original', 'human_rewritten', 'all_history', 'same_topic',
         't5_rewritten', 'ConvGQR_rewritten', 'LLM4CS',
         "top_qr"
     ])
-    parser.add_argument("--expansion_info", default="gen_topic_100p_detector", choices=[
+    parser.add_argument("--expansion_info", default="cur_topic", choices=[
         "no", "cur_topic", "prev_topics",
         "rand_his_nug", "same_top_nug", "cur_turn_nug", "comb_his_cur_nug", "nug_v2",
         "gen_topic", "gen_shift_topic", "gen_topic_100p_detector"

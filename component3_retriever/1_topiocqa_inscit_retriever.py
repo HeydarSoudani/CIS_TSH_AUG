@@ -48,7 +48,8 @@ def pyserini_retriever(args):
             for line in file:
                 data = json.loads(line.strip())
                 if args.dataset_name == "TopiOCQA":
-                    topics[data['id']] = data["title"].split('[SEP]')[0]
+                    topics[data['id']] = data["title"]
+                    # topics[data['id']] = data["title"].split('[SEP]')[0]
                 elif args.dataset_name == "INSCIT":
                     topics[data['id']] = data["topic"]
     
@@ -319,12 +320,12 @@ if __name__ == "__main__":
     parser.add_argument("--results_base_path", type=str, default="component3_retriever/output_results")
     parser.add_argument("--dataset_name", type=str, default="TopiOCQA", choices=["TopiOCQA", "INSCIT"])
     parser.add_argument("--dataset_subsec", type=str, default="dev", choices=["train", "dev", "test"])
-    parser.add_argument("--query_format", type=str, default='original', choices=[
+    parser.add_argument("--query_format", type=str, default='t5_rewritten', choices=[
         'original', 'human_rewritten', 'all_history', 'same_topic',
         't5_rewritten', 'ConvGQR_rewritten',
         "top_qr"
     ])
-    parser.add_argument("--expansion_info", default="gen_topic_100p_detector", choices=[
+    parser.add_argument("--expansion_info", default="cur_topic", choices=[
         "no", "cur_topic", "prev_topics",
         "rand_his_nug", "same_top_nug", "cur_turn_nug", "comb_his_cur_nug", "nug_v2",
         "gen_topic", "gen_shift_topic", "gen_topic_100p_detector"
