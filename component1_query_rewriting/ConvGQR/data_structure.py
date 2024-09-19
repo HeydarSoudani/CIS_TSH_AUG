@@ -33,7 +33,6 @@ class ConvExample_rewrite:
         #self.query = query
         self.rewrite = rewrite
 
-
 class ConvDataset_rewrite(Dataset):
     def __init__(self, args, query_tokenizer, filename):
         self.examples = []
@@ -506,21 +505,21 @@ class T5RewriterIRDataset_topiocqa(Dataset):
             flat_concat = []
 
             # === For TopiOCQA
-            # ctx_utts_text = []
-            # cur_utt_text = record['query']
-            # history_query = record['history_query']
-            # history_answer = record['history_answer']
-            # for i in range(len(history_query)):
-            #     ctx_utts_text.append(history_query[i])
-            #     ctx_utts_text.append(history_answer[i])
-            # cur_response_text = record["answer"]
-            # oracle_utt_text = record["rewrite"]
+            ctx_utts_text = []
+            cur_utt_text = record['query']
+            history_query = record['history_query']
+            history_answer = record['history_answer']
+            for i in range(len(history_query)):
+                ctx_utts_text.append(history_query[i])
+                ctx_utts_text.append(history_answer[i])
+            cur_response_text = record["answer"]
+            oracle_utt_text = record["rewrite"]
 
             # === For INSCIT
-            cur_utt_text = record['cur_utt_text']
-            ctx_utts_text = record['ctx_utts_text']
-            cur_response_text = record["cur_response_text"]
-            oracle_utt_text = record["oracle_utt_text"]
+            # cur_utt_text = record['cur_utt_text']
+            # ctx_utts_text = record['ctx_utts_text']
+            # cur_response_text = record["cur_response_text"]
+            # oracle_utt_text = record["oracle_utt_text"]
 
             #if "pos_docs" in record and len(record["pos_docs"]) != 0:
             #    pos_docs_text = record["pos_docs"]

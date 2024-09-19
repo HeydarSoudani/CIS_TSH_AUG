@@ -119,6 +119,11 @@ def return_final_ebmbedding(
 
 def llm4cs_retriever(args):
     
+    print("Preprocessing files ...")
+    index_dir = f"{args.index_dir_base_path}/{args.dataset_name}/ance_index"
+    qrel_file_path = f"processed_datasets/{args.dataset_name}/test_gold_qrels.trec"
+    rewriting_file = f"component3_retriever/input_data/{args.dataset_name}/LLM4CS/rewrites.jsonl"
+    
     # === Query encoder model ===================
     encoder = AnceQueryEncoder(args.encoder, device=args.device)
     tokenizer = RobertaTokenizer.from_pretrained(args.encoder, do_lower_case=True)
@@ -145,6 +150,20 @@ def llm4cs_retriever(args):
         bt_src_doc_encoding = tokenizer(bt_src_doc, 
                                           padding="longest", 
                                           max_length=512, 
+                                          truncation=True, 
+                                          return_tensors="pt")
+        bt_d_input_ids, bt_d_attention_mask = bt_src_doc_encoding.input_ids, bt_src_doc_encoding.attention_mask
+        return {
+                "bt_input": bt_src_doc,
+                "bt_sample_ids": bt_sample_ids, 
+                "bt_input_ids":bt_d_input_ids, 
+                "bt_attention_mask":bt_d_attention_mask}
+    
+    def topic_encoding_collate_fn(batch):
+        bt_sample_ids, bt_src_doc = list(zip(*batch))
+        bt_src_doc_encoding = tokenizer(bt_src_doc, 
+                                          padding="longest", 
+                                          max_length=16, 
                                           truncation=True, 
                                           return_tensors="pt")
         bt_d_input_ids, bt_d_attention_mask = bt_src_doc_encoding.input_ids, bt_src_doc_encoding.attention_mask
@@ -192,16 +211,50 @@ def llm4cs_retriever(args):
         return embeddings, eid2sid
     
     
-    print("Preprocessing files ...")
-    index_dir = f"{args.index_dir_base_path}/{args.dataset_name}/ance_index"
-    qrel_file_path = f"processed_datasets/{args.dataset_name}/test_gold_qrels.trec"
-    rewriting_file = f"component3_retriever/input_data/{args.dataset_name}/LLM4CS/rewrites.jsonl"
+    # ============================================
+    # === Read topic =============================
+    topics = {}
+    topic_file = f"component3_retriever/input_data/{args.dataset_name}/baselines/{args.dataset_subsec}/original.jsonl"
+    
+    if args.expansion_info == "cur_topic":
+        with open (topic_file, 'r') as file:
+            for line in file:
+                data = json.loads(line.strip())
+                if args.dataset_name == "TopiOCQA":
+                    topics[data['id']] = data["title"]
+                    # topics[data['id']] = data["title"].split('[SEP]')[0]
+                elif args.dataset_name == "INSCIT":
+                    topics[data['id']] = data["topic"]
+    
+    elif args.expansion_info == "prev_topics":
+        conversation_data = {}
+        with open(topic_file, 'r') as in_file:
+            for line in in_file:
+                sample = json.loads(line)
+                conversation_data[sample['id']] = sample
+        
+        for q_id, data in conversation_data.items():
+            conv_id = data["conv_id"]
+            turn_id = data["turn_id"]
+            if turn_id == 1:
+                topics[data['id']] = ''
+            else:
+                topics_list = []
+                for tid in range(1, turn_id):
+                    tit = conversation_data[f"{conv_id}_{tid}"]["title"].split('[SEP]')[0]
+                    if tit not in topics_list:
+                        topics_list.append(tit)
+                
+                topics[data['id']] = ' [SEP] '.join(topics_list)
+    
+
+    # == Get queries' embedding ==================
+    print("Query embedding ...")
     with open(rewriting_file, "r") as f:
         data = f.readlines()
     
-    # == Get queries' embedding ==================
-    print("Query embedding ...")
     query_encoding_dataset, response_encoding_dataset = [], []
+    topic_encoding_dataset = []
     n_query_candidate, n_response_candidate = 0, 0
     
     for query_idx, line in enumerate(data):
@@ -227,6 +280,11 @@ def llm4cs_retriever(args):
             for response in response_list:
                 response_encoding_dataset.append([sample_id, response])
     
+        # Create topic dataset
+        topic = topics[sample_id]
+        topic_encoding_dataset.append([sample_id, topic])
+        
+    
     has_qrel_label_sample_ids = get_has_qrel_label_sample_ids(qrel_file_path)
     if args.include_query:
         query_test_loader = DataLoader(query_encoding_dataset, batch_size = 1, shuffle=False, collate_fn=query_encoding_collate_fn)
@@ -243,19 +301,30 @@ def llm4cs_retriever(args):
         n_response_candidate,
         query_eid2sid,
         response_eid2sid
-    )    
+    )
+    
+    # === Merge 
+    if args.expansion_info in ["prev_topics", "cur_topic"]:
+        topic_test_loader = DataLoader(topic_encoding_dataset, batch_size=1, shuffle=False, collate_fn=topic_encoding_collate_fn)
+        topic_embeddings, topic_eid2sid = forward_pass(topic_test_loader, encoder, has_qrel_label_sample_ids)
+        with_topic_embeddings = (embeddings + topic_embeddings) / 2
+        
 
     # === Retrieve base on queries' embedding ====
+    print("Retrieving ...")
     encoder = AnceQueryEncoder(args.encoder, device=args.device)
     searcher = FaissSearcher(index_dir, encoder)    
-    hits = searcher.batch_search(embeddings, eid2sid, k=args.top_k, threads=20)
+    if args.expansion_info in ["prev_topics", "cur_topic"]:
+        hits = searcher.batch_search(with_topic_embeddings, eid2sid, k=args.top_k, threads=20)
+    else:
+        hits = searcher.batch_search(embeddings, eid2sid, k=args.top_k, threads=20)
     
     # === Write to output file ===================
     print("Writing to output file ...")
     os.makedirs(args.results_base_path, exist_ok=True)
     os.makedirs(f"{args.results_base_path}/{args.dataset_name}", exist_ok=True)
-    if args.add_topic in ["prev_topics", "cur_topic"]:
-        output_res_file = f"{args.results_base_path}/{args.dataset_name}/{args.add_topic}+LLM4CS_{args.retriever_model}_results.trec"
+    if args.expansion_info in ["prev_topics", "cur_topic"]:
+        output_res_file = f"{args.results_base_path}/{args.dataset_name}/{args.expansion_info}+LLM4CS_{args.retriever_model}_results.trec"
     else:
         output_res_file = f"{args.results_base_path}/{args.dataset_name}/LLM4CS_{args.retriever_model}_results.trec"
     
@@ -275,12 +344,13 @@ if __name__ == "__main__":
     parser.add_argument("--index_dir_base_path", type=str, default="corpus")
     parser.add_argument("--results_base_path", type=str, default="component3_retriever/output_results")
     parser.add_argument("--dataset_name", type=str, default="TopiOCQA", choices=["TopiOCQA", "INSCIT"])
+    parser.add_argument("--dataset_subsec", type=str, default="dev", choices=["train", "dev", "test"])
     parser.add_argument("--encoder", type=str, default="castorini/ance-msmarco-passage")
     
     parser.add_argument("--aggregation_method", type=str, default="mean", choices=["sc", "mean", "maxprob"])
     parser.add_argument("--eval_field_name", type=str, default="predicted_rewrite", choices=["predicted_rewrite"])
     parser.add_argument("--max_query_length", type=int, default=64, help="Max single query length")
-    parser.add_argument("--add_topic", default="no", choices=["no", "cur_topic", "prev_topics"])
+    parser.add_argument("--expansion_info", default="cur_topic", choices=["no", "cur_topic", "prev_topics"])
     
     parser.add_argument("--include_query", action="store_false")
     parser.add_argument("--include_response", action="store_false")

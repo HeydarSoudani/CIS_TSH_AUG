@@ -10,4 +10,4 @@
 module load 2022
 module load Python/3.10.4-GCCcore-11.3.0
 
-srun $HOME/CIS_TSH_AUG/component2_nugget_generation/1_prompt_based_nugget_generation.py
+srun $HOME/CIS_TSH_AUG/component2_nugget_generation/2_postprocessing_nug_extraction_prompting.py

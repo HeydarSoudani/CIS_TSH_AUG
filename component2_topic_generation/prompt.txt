@@ -1,0 +1,61 @@
+You will receive a conversation between user and system, the current user query, and a set of wikipedia style topics. Your task is to identify generalizable topics for the current user query within the conversation that can help retrieving answer-contained passage. If any relevant topics are missing from the provided set, please add them. Otherwise, output the existing topics as identified in the conversation.
+
+[Topics]
+Pittsburgh
+
+
+[Examples]
+Example 1: Adding "[1] Oceanic climate"
+
+Conversation history:
+what is yttrium? Chemical element
+what are its properties? Soft, silver-metallic, lustrous and highly crystalline transition metal
+who discover this element? Carl Axel Arrhenius
+where was he born? Stockholm
+what is the climate like in this place? Humid continental and oceanic climate
+
+Current user query:
+what is the cause of the latter type of climatic condition? 
+
+Your response: 
+[1] Oceanic climate: Inquires about the factors contributing to oceanic climate conditions.
+
+
+Example 2: Duplicate "[1] Pittsburgh", returning the existing topic
+Conversation history:
+who was james russell lowell? He was an American Romantic poet, critic, editor, and diplomat.
+what kind of training is given to last type of professionals? Emotional intelligence.
+what entails this profession? They have to collect and report information that could affect national interests, often with advice about how the home-country government should respond.
+did the person mentioned above hold any political post? Served as a delegate to the Republican National Convention in Cincinnati and Minister to England
+what is the agenda of this convention? To officially nominate and confirm a candidate for president and vice president, adopt a comprehensive party platform and unify the party, as well as publicize and launch the fall campaign.
+where was it held in the beginning? Lafayette Hall in Pittsburgh
+what are the local cuisines there? Pierogies, kielbasa, chipped chopped ham sandwiches etc which annual sporting events take place in the city? Football, hockey, baseball etc
+are there any theatres? Yes, Repertory Theatre, Kuntu Repertory Theatre etc
+
+Current user query:
+which type of music is liked in the city?
+
+Your response: 
+[1] Pittsburgh: Inquires about the genres of music that have a strong following in this city.
+
+
+[Instructions]
+Step 1: Determine topics for current user query. 
+- The topic labels must be as GENERALIZABLE as possible. They must be document-specific.
+- The topics must reflect a SINGLE topic instead of a combination of topics.
+- The new topics must have a level number, a short general label, and a topic description. 
+- The topics must be broad enough to accommodate future subtopics. 
+Step 2: Perform ONE of the following operations: 
+1. If there are already duplicates or relevant topics in the hierarchy, output those topics and stop here. 
+2. If the current user query contains no topic, return "None". 
+3. Otherwise, add your topic as a top-level topic. Stop here and output the added topic(s). DO NOT add any additional levels.
+
+Conversation history:
+{Conversation_history}
+
+Current user query:
+{Query}
+
+
+Please ONLY return the relevant or modified topics at the top level in the hierarchy.
+[Your response]

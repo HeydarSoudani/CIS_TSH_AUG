@@ -1,16 +1,22 @@
 
 import pytrec_eval
 import numpy as np
-import argparse, os, json, csv
+import argparse, json
 
 def retiever_evaluation(args):
 
-    print(f"=== Evaluating {args.dataset_name}/{args.query_format}/{args.retriever_model}/topic: {args.add_topic}...")
+    print(f"=== Evaluating {args.dataset_name}/{args.query_format}/{args.retriever_model}/Expansion: {args.expansion_info}...")
     # === Read results and gold_qrel files ===========    
-    if args.add_topic in ["prev_topics", "cur_topic"]:
-        results_file = f"component3_retriever/output_results/{args.dataset_name}/{args.add_topic}+{args.query_format}_{args.retriever_model}_results.trec"
+    if args.expansion_info in ["prev_topics", "cur_topic", "gen_topic", "gen_shift_topic", "gen_topic_100p_detector"]:
+        results_file = f"component3_retriever/output_results/{args.dataset_name}/{args.expansion_info}+{args.query_format}_{args.retriever_model}_results.trec"
+    elif args.expansion_info in ["rand_his_nug", "same_top_nug", "cur_turn_nug", "comb_his_cur_nug", "nug_v2"]:
+        results_file = f"component3_retriever/output_results/{args.dataset_name}/{args.expansion_info}_{args.nugget_num}+{args.query_format}_{args.retriever_model}_results.trec"
     else:
         results_file = f"component3_retriever/output_results/{args.dataset_name}/{args.query_format}_{args.retriever_model}_results.trec"
+    
+    # results_file = "component3_retriever/output_results/TopiOCQA/cur_topic+sep_embedding_ance_results.trec"
+    # results_file = "component3_retriever/output_results/TopiOCQA/cur_topic+LLM4CS_ance_results.trec"
+    results_file = "component3_retriever/output_results/TopiOCQA/doc_topic_embedding_ance_results.trec"
     
     with open(results_file, 'r') as f:
         run_data = f.readlines()
@@ -78,14 +84,20 @@ def retiever_evaluation(args):
     print(res)
 
 def retiever_evaluation_per_buckets(args):
-    print(f"=== Evaluating {args.dataset_name}/{args.query_format}/{args.retriever_model}/topic: {args.add_topic}...")
+    print(f"=== Evaluating {args.dataset_name}/{args.query_format}/{args.retriever_model}/topic: {args.expansion_info}...")
     
     # === Read files ====================
-    if args.add_topic in ["prev_topics", "cur_topic"]:
-        results_file = f"component3_retriever/output_results/{args.dataset_name}/{args.add_topic}+{args.query_format}_{args.retriever_model}_results.trec"
+    if args.expansion_info in ["prev_topics", "cur_topic", "gen_topic", "gen_shift_topic", "gen_topic_100p_detector"]:
+        results_file = f"component3_retriever/output_results/{args.dataset_name}/{args.expansion_info}+{args.query_format}_{args.retriever_model}_results.trec"
+    elif args.expansion_info in ["rand_his_nug", "same_top_nug", "cur_turn_nug", "comb_his_cur_nug", "nug_v2"]:
+        results_file = f"component3_retriever/output_results/{args.dataset_name}/{args.expansion_info}_{args.nugget_num}+{args.query_format}_{args.retriever_model}_results.trec"
     else:
         results_file = f"component3_retriever/output_results/{args.dataset_name}/{args.query_format}_{args.retriever_model}_results.trec"
-        
+    
+    # results_file = "component3_retriever/output_results/TopiOCQA/cur_topic+sep_embedding_ance_results.trec"
+    # results_file = "component3_retriever/output_results/TopiOCQA/cur_topic+LLM4CS_ance_results.trec"
+    results_file = "component3_retriever/output_results/TopiOCQA/doc_topic_embedding_ance_results.trec"
+    
     with open(results_file, 'r') as f:
         run_data = f.readlines()
     
@@ -176,15 +188,22 @@ if __name__ == "__main__":
     parser.add_argument("--retriever_model", type=str, default="ance", choices=["bm25", "ance"])
     parser.add_argument("--dataset_name", type=str, default="TopiOCQA", choices=["QReCC", "TopiOCQA", "INSCIT"])
     parser.add_argument("--bucket_type", type=str, default="shift", choices=["turn_number", "shift"])
-    parser.add_argument("--query_format", type=str, default="LLM4CS", choices=[
+    parser.add_argument("--query_format", type=str, default="t5_rewritten", choices=[
         'original', 'human_rewritten', 'all_history', 'same_topic',
-        't5_rewritten', 'ConvGQR_rewritten', 'LLM4CS'
+        't5_rewritten', 'ConvGQR_rewritten', 'LLM4CS',
+        "top_qr"
     ])
-    parser.add_argument("--add_topic", default="no", choices=["no", "cur_topic", "prev_topics"])
+    parser.add_argument("--expansion_info", default="cur_topic", choices=[
+        "no", "cur_topic", "prev_topics",
+        "rand_his_nug", "same_top_nug", "cur_turn_nug", "comb_his_cur_nug", "nug_v2",
+        "gen_topic", "gen_shift_topic", "gen_topic_100p_detector"
+    ])
+    parser.add_argument("--nugget_num", type=int, default=5)
     parser.add_argument("--rel_threshold", type=int, default="1")
     args = parser.parse_args()
     
     retiever_evaluation(args)
-    # retiever_evaluation_per_buckets(args)
+    retiever_evaluation_per_buckets(args)
+    
 
 # python component3_retriever/2_retriever_evaluation.py
