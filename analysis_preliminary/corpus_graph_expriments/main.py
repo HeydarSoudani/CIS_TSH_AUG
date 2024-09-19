@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
 
+import pytrec_eval
 import torch
 import random
 import numpy as np
 import argparse, logging, json, os
-from pyserini.search.lucene import LuceneSearcher
+
+from tqdm import tqdm
+
+from distutils.command.build_scripts import first_line_re
+# from pyserini.search.lucene import LuceneSearcher
 # from pyserini.search.faiss import FaissSearcher
 # from pyserini.dsearch import AnceQueryEncoder
 
@@ -41,7 +46,63 @@ def processed_row_file(row_file, output_file):
                     "query": pos_ctx["text"]
                 }
                 jsonl_file.write(json.dumps(item) + '\n')
-        
+
+def create_gold_trec_file(args):
+    gold_trec_file = f"analysis_preliminary/corpus_graph_expriments/gold_trec_{args.dataset_name}_{args.dataset_subsec}.trec"
+    
+    all_turns = []
+    with open(args.doc_as_query, 'r') as in_file:
+        for line in in_file:
+            turn_obj = json.loads(line)
+            all_turns.append(turn_obj)
+
+    with open(gold_trec_file, 'w') as out_file:
+        for idx, turn in tqdm(enumerate(all_turns)):
+            cur_conv = turn["conv_num"]
+            if idx < len(all_turns)-1:
+                nxt_conv = all_turns[idx+1]["conv_num"]
+            
+                if cur_conv == nxt_conv:
+                    cur_turn = turn["id"]
+                    nxt_turn = all_turns[idx+1]["id"]
+                    out_file.write(f"{cur_turn} Q0 {nxt_turn} {args.retriever_model} 1\n")
+
+def create_gold_trec_files_per_type(args):
+    first_gold_trec_file = f"analysis_preliminary/corpus_graph_expriments/gold_trec_first_{args.dataset_name}_{args.dataset_subsec}.trec"
+    concentrated_gold_trec_file = f"analysis_preliminary/corpus_graph_expriments/gold_trec_concentrated_{args.dataset_name}_{args.dataset_subsec}.trec"
+    shifted_gold_trec_file = f"analysis_preliminary/corpus_graph_expriments/gold_trec_shifted_{args.dataset_name}_{args.dataset_subsec}.trec"
+    
+    turns_buckets = "processed_datasets/TopiOCQA/turn_buckets/per_shift.json"
+    with open(turns_buckets, 'r', encoding='utf-8') as file:
+        bucket_data = json.load(file)
+    
+    
+    all_turns = []
+    with open(args.doc_as_query, 'r') as in_file:
+        for line in in_file:
+            turn_obj = json.loads(line)
+            all_turns.append(turn_obj)
+
+    with open(first_gold_trec_file, 'w') as first_out_file, open(concentrated_gold_trec_file, 'w') as conc_out_file, open(shifted_gold_trec_file, 'w') as shift_out_file:
+        for idx, turn in tqdm(enumerate(all_turns)):
+            cur_conv = turn["conv_num"]
+            cur_turn_num = turn["turn_num"]
+            if idx < len(all_turns)-1:
+                nxt_conv = all_turns[idx+1]["conv_num"]
+                
+                if cur_conv == nxt_conv:
+                    cur_turn = turn["id"]
+                    nxt_turn = all_turns[idx+1]["id"]
+                    
+                    query_id = f"{str(cur_conv)}_{str(cur_turn_num)}"
+                    print(query_id)
+                    if query_id in bucket_data["First"]:
+                        first_out_file.write(f"{cur_turn} Q0 {nxt_turn} 1\n")
+                    elif query_id in bucket_data["Topic-concentrated"]:
+                        conc_out_file.write(f"{cur_turn} Q0 {nxt_turn} 1\n")
+                    elif query_id in bucket_data["Topic-shift"]:
+                        shift_out_file.write(f"{cur_turn} Q0 {nxt_turn} 1\n")
+
 def similar_docs_pyserini(args):
     print("Preprocessing files ...")
     index_dir = f"{args.index_dir_base_path}/{args.dataset_name}/{args.retriever_model}_index"
@@ -78,9 +139,6 @@ def similar_docs_pyserini(args):
     
     # === Write to output file ===============
     print("Writing to output file ...")
-    os.makedirs(args.results_base_path, exist_ok=True)
-    args.output_res_file = f"{args.results_base_path}/similar_doc_{args.dataset_name}_{args.dataset_subsec}_{args.retriever_model}_results.trec"
-    
     with open(args.output_res_file, "w") as f:
         for qid in qid_list:
             for i, item in enumerate(hits[qid]):
@@ -118,11 +176,9 @@ def postprocessing_results(args):
             all_turns.append(turn_obj)
     
     connections = {}
-    for idx, turn in enumerate(all_turns):
+    for idx, turn in tqdm(enumerate(all_turns)):
         
-        # Current turn
         cur_conv = turn["conv_num"]
-        
         if idx < len(all_turns)-1:
             nxt_conv = all_turns[idx+1]["conv_num"]
         
@@ -146,7 +202,75 @@ def postprocessing_results(args):
         for conv_num, value in connections.items():
             item = {conv_num: value} 
             out_file.write(json.dumps(item) + '\n')
+
+def retriever_eval(args):
+    first_gold_trec_file = f"analysis_preliminary/corpus_graph_expriments/gold_trec_first_{args.dataset_name}_{args.dataset_subsec}.trec"
+    concentrated_gold_trec_file = f"analysis_preliminary/corpus_graph_expriments/gold_trec_concentrated_{args.dataset_name}_{args.dataset_subsec}.trec"
+    shifted_gold_trec_file = f"analysis_preliminary/corpus_graph_expriments/gold_trec_shifted_{args.dataset_name}_{args.dataset_subsec}.trec"
+    with open(shifted_gold_trec_file, 'r') as f:
+        qrel_data = f.readlines()
+    
+    qrels = {}
+    qrels_ndcg = {}
+    query_id = []
+    for line in qrel_data:
+        line = line.strip().split()
+        query = line[0]
+        passage = line[2]
+        rel = int(line[3])
+        if query not in qrels:
+            qrels[query] = {}
+            query_id.append(query)
+        if query not in qrels_ndcg:
+            qrels_ndcg[query] = {}
+
+        # for NDCG
+        qrels_ndcg[query][passage] = rel
+        # for MAP, MRR, Recall
+        if rel >= args.rel_threshold:
+            rel = 1
+        else:
+            rel = 0
+        qrels[query][passage] = rel
+    
+    
+    runs = {}
+    with open(args.output_res_file, 'r') as f:
+        run_data = f.readlines()
+    for line in run_data:
+        line = line.split(" ")
+        query = line[0]
+        passage = line[2]
+        rel = int(float(line[4]))
+        if query not in runs:
+            runs[query] = {}
+        runs[query][passage] = rel
+
+    evaluator = pytrec_eval.RelevanceEvaluator(qrels, {"map", "recip_rank", "recall.5", "recall.10", "recall.100", "recall.1000"})
+    res = evaluator.evaluate(runs)
+    map_list = [v['map'] for v in res.values()]
+    mrr_list = [v['recip_rank'] for v in res.values()]
+    recall_1000_list = [v['recall_1000'] for v in res.values()]
+    recall_100_list = [v['recall_100'] for v in res.values()]
+    recall_10_list = [v['recall_10'] for v in res.values()]
+    recall_5_list = [v['recall_5'] for v in res.values()]
+
+    evaluator = pytrec_eval.RelevanceEvaluator(qrels_ndcg, {"ndcg_cut.3"})
+    res = evaluator.evaluate(runs)
+    ndcg_3_list = [v['ndcg_cut_3'] for v in res.values()]
+    res = {
+            "MAP": np.average(map_list),
+            "MRR": np.average(mrr_list),
+            "NDCG@3": np.average(ndcg_3_list),
+            "Recall@5": np.average(recall_5_list),
+            "Recall@10": np.average(recall_10_list),
+            "Recall@100": np.average(recall_100_list), 
+            "Recall@1000": np.average(recall_1000_list),
             
+        }
+    print("---------------------Evaluation results:---------------------")    
+    print(res)
+
 
 if __name__ == "__main__":
     
@@ -174,10 +298,18 @@ if __name__ == "__main__":
     args.doc_as_query = f"analysis_preliminary/corpus_graph_expriments/doc_as_query_{args.dataset_subsec}.jsonl"
     # processed_row_file(row_file, args.doc_as_query)
     
+    # create_gold_trec_file(args)
+    # create_gold_trec_files_per_type(args)
+    
     
     # === 2) file preprocessing ==============
-    similar_docs_pyserini(args)
+    os.makedirs(args.results_base_path, exist_ok=True)
+    args.output_res_file = f"{args.results_base_path}/similar_doc_{args.dataset_name}_{args.dataset_subsec}_{args.retriever_model}_results.trec"
+    
+    # similar_docs_pyserini(args)
     # postprocessing_results(args)
+    
+    retriever_eval(args)
     
     # python analysis_preliminary/corpus_graph_expriments/main.py
     
