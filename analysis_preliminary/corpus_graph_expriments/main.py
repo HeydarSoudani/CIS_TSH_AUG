@@ -1,17 +1,15 @@
 #!/usr/bin/env python3
 
-import pytrec_eval
 import torch
 import random
+import pytrec_eval
 import numpy as np
-import argparse, logging, json, os
-
 from tqdm import tqdm
+import argparse, logging, json, os
+from pyserini.search.lucene import LuceneSearcher
+from pyserini.search.faiss import FaissSearcher
+from pyserini.encode import AnceQueryEncoder
 
-from distutils.command.build_scripts import first_line_re
-# from pyserini.search.lucene import LuceneSearcher
-# from pyserini.search.faiss import FaissSearcher
-# from pyserini.dsearch import AnceQueryEncoder
 
 logging.basicConfig(level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -20,6 +18,7 @@ logging.basicConfig(level=logging.DEBUG,
 )
 os.environ["WANDB_MODE"] = "offline"
 subset_percentage = 1.0
+
 
 def set_seed(seed):
     torch.manual_seed(seed)
@@ -131,10 +130,10 @@ def similar_docs_pyserini(args):
         searcher = LuceneSearcher(index_dir)
         searcher.set_bm25(args.bm25_k1, args.bm25_b)
         hits = searcher.batch_search(query_list, qid_list, k=args.top_k, threads=20)
-    # elif args.retriever_model == "ance":
-    #     encoder = AnceQueryEncoder(args.query_encoder, device=args.device)
-    #     searcher = FaissSearcher(index_dir, encoder)
-    #     hits = searcher.batch_search(query_list, qid_list, k=args.top_k, threads=20)
+    elif args.retriever_model == "ance":
+        encoder = AnceQueryEncoder(args.query_encoder, device=args.device)
+        searcher = FaissSearcher(index_dir, encoder)
+        hits = searcher.batch_search(query_list, qid_list, k=args.top_k, threads=20)
 
     
     # === Write to output file ===============
@@ -275,7 +274,7 @@ def retriever_eval(args):
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser()
-    parser.add_argument("--retriever_model", type=str, default="bm25", choices=["bm25", "ance"])
+    parser.add_argument("--retriever_model", type=str, default="ance", choices=["bm25", "ance"])
     parser.add_argument("--query_encoder", type=str, default="castorini/ance-msmarco-passage")
     parser.add_argument("--index_dir_base_path", type=str, default="corpus")
     parser.add_argument("--results_base_path", type=str, default="analysis_preliminary/corpus_graph_expriments")
@@ -283,7 +282,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset_subsec", type=str, default="dev", choices=["train", "dev", "test"])
     parser.add_argument("--bm25_k1", type=float, default="0.9")
     parser.add_argument("--bm25_b", type=float, default="0.4")
-    parser.add_argument("--top_k", type=int, default="1000")
+    parser.add_argument("--top_k", type=int, default="100")
     parser.add_argument("--rel_threshold", type=int, default="1")
     parser.add_argument("--seed", type=int, default=42)
     
@@ -296,20 +295,20 @@ if __name__ == "__main__":
     # === 1) file preprocessing ==============
     row_file = f"processed_datasets/TopiOCQA/ir_all_history_{args.dataset_subsec}.json"
     args.doc_as_query = f"analysis_preliminary/corpus_graph_expriments/doc_as_query_{args.dataset_subsec}.jsonl"
-    # processed_row_file(row_file, args.doc_as_query)
     
+    # processed_row_file(row_file, args.doc_as_query)
     # create_gold_trec_file(args)
     # create_gold_trec_files_per_type(args)
     
-    
-    # === 2) file preprocessing ==============
+    # === 2) Similarity ======================
     os.makedirs(args.results_base_path, exist_ok=True)
     args.output_res_file = f"{args.results_base_path}/similar_doc_{args.dataset_name}_{args.dataset_subsec}_{args.retriever_model}_results.trec"
     
-    # similar_docs_pyserini(args)
-    # postprocessing_results(args)
+    similar_docs_pyserini(args)
     
-    retriever_eval(args)
+    # === 3) Result's postprocessing =========
+    # postprocessing_results(args)
+    # retriever_eval(args)
     
     # python analysis_preliminary/corpus_graph_expriments/main.py
     

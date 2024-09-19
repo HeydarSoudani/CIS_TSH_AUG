@@ -104,7 +104,7 @@ def pyserini_retriever(args):
                 else:
                     topics[data['query_id']] = ""
     
-      
+    
     # ========================================    
     # === Read nuggets =======================
     nuggets = {}
