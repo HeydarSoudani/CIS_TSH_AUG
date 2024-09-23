@@ -65,7 +65,7 @@ def create_gold_trec_file(args):
                 if cur_conv == nxt_conv:
                     cur_turn = turn["id"]
                     nxt_turn = all_turns[idx+1]["id"]
-                    out_file.write(f"{cur_turn} Q0 {nxt_turn} {args.retriever_model} 1\n")
+                    out_file.write(f"{cur_turn} Q0 {nxt_turn} 1\n")
 
 def create_gold_trec_files_per_type(args):
     first_gold_trec_file = f"analysis_preliminary/corpus_graph_expriments/gold_trec_first_{args.dataset_name}_{args.dataset_subsec}.trec"
@@ -75,7 +75,6 @@ def create_gold_trec_files_per_type(args):
     turns_buckets = "processed_datasets/TopiOCQA/turn_buckets/per_shift.json"
     with open(turns_buckets, 'r', encoding='utf-8') as file:
         bucket_data = json.load(file)
-    
     
     all_turns = []
     with open(args.doc_as_query, 'r') as in_file:
@@ -95,7 +94,6 @@ def create_gold_trec_files_per_type(args):
                     nxt_turn = all_turns[idx+1]["id"]
                     
                     query_id = f"{str(cur_conv)}_{str(cur_turn_num)}"
-                    print(query_id)
                     if query_id in bucket_data["First"]:
                         first_out_file.write(f"{cur_turn} Q0 {nxt_turn} 1\n")
                     elif query_id in bucket_data["Topic-concentrated"]:
@@ -204,10 +202,12 @@ def postprocessing_results(args):
             out_file.write(json.dumps(item) + '\n')
 
 def retriever_eval(args):
+    
+    gold_trec_file = f"analysis_preliminary/corpus_graph_expriments/gold_trec_{args.dataset_name}_{args.dataset_subsec}.trec"
     first_gold_trec_file = f"analysis_preliminary/corpus_graph_expriments/gold_trec_first_{args.dataset_name}_{args.dataset_subsec}.trec"
     concentrated_gold_trec_file = f"analysis_preliminary/corpus_graph_expriments/gold_trec_concentrated_{args.dataset_name}_{args.dataset_subsec}.trec"
     shifted_gold_trec_file = f"analysis_preliminary/corpus_graph_expriments/gold_trec_shifted_{args.dataset_name}_{args.dataset_subsec}.trec"
-    with open(shifted_gold_trec_file, 'r') as f:
+    with open(gold_trec_file, 'r') as f:
         qrel_data = f.readlines()
     
     qrels = {}
@@ -298,7 +298,7 @@ if __name__ == "__main__":
     args.doc_as_query = f"analysis_preliminary/corpus_graph_expriments/doc_as_query_{args.dataset_subsec}.jsonl"
     # processed_row_file(row_file, args.doc_as_query)
     
-    # create_gold_trec_file(args)
+    create_gold_trec_file(args)
     # create_gold_trec_files_per_type(args)
     
     
