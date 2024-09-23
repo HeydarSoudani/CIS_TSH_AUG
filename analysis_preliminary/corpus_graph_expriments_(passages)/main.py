@@ -304,11 +304,24 @@ if __name__ == "__main__":
     os.makedirs(args.results_base_path, exist_ok=True)
     args.output_res_file = f"{args.results_base_path}/similar_doc_{args.dataset_name}_{args.dataset_subsec}_{args.retriever_model}_results.trec"
     
-    similar_docs_pyserini(args)
+    # similar_docs_pyserini(args)
     
     # === 3) Result's postprocessing =========
     # postprocessing_results(args)
     # retriever_eval(args)
+    
+    
+    jsonl_file_path = 'corpus/TopiOCQA/full_wiki_segments_pyserini_format.jsonl'
+    jsonl_file_path = 'corpus/TopiOCQA/full_wiki.jsonl'
+    with open(jsonl_file_path, 'r') as file:
+        file.readline()
+        file.readline()
+        file.readline()
+        file.readline()
+        line = file.readline()
+    record = json.loads(line)
+    print(record)
+    
     
     # python analysis_preliminary/corpus_graph_expriments/main.py
     

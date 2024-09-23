@@ -28,7 +28,6 @@ def set_seed(seed):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-
 def local_corpus_pyserini_retriever(args):
     print("Preprocessing files ...")
     index_dir = f"{args.index_dir_base_path}/{args.dataset_name}/{args.retriever_model}_index"
@@ -84,7 +83,6 @@ def local_corpus_pyserini_retriever(args):
                 f.write('\n')
                 
     print("Done!")
-
 
 if __name__ == "__main__":
     
