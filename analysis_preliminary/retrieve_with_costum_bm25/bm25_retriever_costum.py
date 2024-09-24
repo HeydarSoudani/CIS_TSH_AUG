@@ -19,9 +19,6 @@ def set_seed(seed):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-
-
-
 class CustomBM25:
     def __init__(self, index_dir, lc_threshold, k1=1.5, b=0.75):
         self.index_reader = IndexReader(index_dir)
@@ -57,7 +54,7 @@ class CustomBM25:
                 denominator = term_freq + self.k1 * (1 - self.b + self.b * (doc_len / self.avg_doc_len))
                 score += idf * (numerator / denominator)
         
-        if doc_id in local_corpus:
+        if doc_id[3:] in local_corpus:
             return score * 1.0
         else:
             return score * self.lc_threshold
@@ -75,15 +72,46 @@ class CustomBM25:
 def main():
     print("Preprocessing files ...")
     index_dir = f"{args.index_dir_base_path}/{args.dataset_name}/{args.retriever_model}_index"
+    docs_to_passages_file = "analysis_preliminary/corpus_graph_expriments_docs/doc_to_passages.json"
+    
+    relevant_psgs_file = "analysis_preliminary/corpus_graph_expriments_docs/doc_to_passages.json"
+    topic_2_docid = {}
+    docid_2_psgs = {}
+    with open(relevant_psgs_file, 'r') as file:
+        doc_psgs_data = json.load(file)
+    for topic, value in doc_psgs_data.items():
+        topic_2_docid[topic] = value['doc_id']
+        docid_2_psgs[value['doc_id']] = value['passage_ids']
+        
+    docid_2_similar_docs = {}
+    similar_docs_file = "analysis_preliminary/corpus_graph_expriments_docs/original_bm25_results.trec"
+    with open(similar_docs_file, 'r') as f:
+        qrel_data = f.readlines()
+    
+    for line in qrel_data:
+        line = line.strip().split()
+        if line[0] not in docid_2_similar_docs:
+            docid_2_similar_docs[line[0]] = []
+        docid_2_similar_docs[line[0]].append(line[2])
+    
     
     queries = {}
-    query_file = ""
-    relevant_psg_file = ""
+    query_file = "datasets/TopiOCQA/topiocqa_dev.json"
     with open (query_file, 'r') as file:
-        for line in file:
-            item = json.loads(line.strip())
-            queries[item['id']] = item["query"]
-            queries[item['id']] = {"query": item["query"], "local_corpus": ""}
+        queries_data = json.load(file)
+    
+    for conv_turn in queries_data:
+        query_topic = conv_turn['Topic']
+        query_id = f"{conv_turn['Conversation_no']}_{conv_turn['Turn_no']}"
+        
+        docid = topic_2_docid[query_topic]
+        similar_docs = docid_2_similar_docs[docid]
+        local_corpus = []
+        for doc in similar_docs:
+            psgs = docid_2_psgs[doc]
+            local_corpus.extend(psgs)
+            
+        queries[query_id] = {"query": conv_turn["Question"], "local_corpus": local_corpus}
         
     # === Select a subset of queries ===========
     if subset_percentage != 1.0:
@@ -115,7 +143,6 @@ def main():
                 f.write(result_line)
                 f.write('\n')    
     print("Done!")
-
 
 
 if __name__ == "__main__":
