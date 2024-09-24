@@ -72,9 +72,12 @@ class CustomBM25:
 def main():
     print("Preprocessing files ...")
     index_dir = f"{args.index_dir_base_path}/{args.dataset_name}/{args.retriever_model}_index"
-    docs_to_passages_file = "analysis_preliminary/corpus_graph_expriments_docs/doc_to_passages.json"
     
     relevant_psgs_file = "analysis_preliminary/corpus_graph_expriments_docs/doc_to_passages.json"
+    
+    topic2docid_file = "analysis_preliminary/corpus_graph_expriments_docs/topic_to_docid.json"
+    docid2topic_file = "analysis_preliminary/corpus_graph_expriments_docs/docid_to_topic.json"
+    
     topic_2_docid = {}
     docid_2_psgs = {}
     with open(relevant_psgs_file, 'r') as file:
