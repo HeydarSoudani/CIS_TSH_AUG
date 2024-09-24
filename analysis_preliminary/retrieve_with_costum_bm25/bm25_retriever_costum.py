@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 
 import math
 import torch
@@ -72,7 +73,6 @@ class CustomBM25:
 def main():
     print("Preprocessing files ...")
     index_dir = f"{args.index_dir_base_path}/{args.dataset_name}/{args.retriever_model}_index"
-    docs_to_passages_file = "analysis_preliminary/corpus_graph_expriments_docs/doc_to_passages.json"
     
     relevant_psgs_file = "analysis_preliminary/corpus_graph_expriments_docs/doc_to_passages.json"
     topic_2_docid = {}
@@ -126,7 +126,6 @@ def main():
     print(f"Query_id: {qid_list[1]}\nQuery: {query_list[1]}\n")
     
     # === Retriever Model ======================
-    local_corpus = ['doc1', 'doc3', 'doc7']
     costum_bm25_model = CustomBM25(index_dir, args.lc_threshold)
 
     hits = {}
@@ -139,7 +138,7 @@ def main():
     with open(args.output_res_file, "w") as f:
         for qid in qid_list:
             for i, item in enumerate(hits[qid]):
-                result_line = f"{qid} Q0 {item.docid[3:]} {i+1} {item.score} {args.retriever_model}"
+                result_line = f"{qid} Q0 {item.docid[3:]} {i+1} {item.score} bm25"
                 f.write(result_line)
                 f.write('\n')    
     print("Done!")
